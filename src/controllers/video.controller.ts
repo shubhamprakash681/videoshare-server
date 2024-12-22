@@ -102,6 +102,32 @@ export const getAllVideos = AsyncHandler(
       }
     );
 
+    // lookup for populating likes count
+    pipeline.push(
+      {
+        $lookup: {
+          from: "likes",
+          localField: "_id",
+          foreignField: "video",
+          as: "likes",
+          pipeline: [
+            {
+              $match: {
+                likeType: "like",
+              },
+            },
+          ],
+        },
+      },
+      {
+        $addFields: {
+          likes: {
+            $size: "$likes",
+          },
+        },
+      }
+    );
+
     // console.log(pipeline);
 
     const videoAggregate = Video.aggregate(pipeline);
