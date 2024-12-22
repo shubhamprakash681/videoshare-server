@@ -2,6 +2,7 @@ import express from "express";
 import {
   getAllVideos,
   getVideoLikeData,
+  incremenetVideoView,
   updateVideo,
   uploadVideo,
 } from "../controllers/video.controller";
@@ -12,6 +13,9 @@ const videoRouter = express.Router();
 
 videoRouter.route("/").get(getAllVideos);
 videoRouter.route("/likes/:videoId").get(isAuthenticatedUser, getVideoLikeData);
+videoRouter
+  .route("/view/:videoId")
+  .patch(isAuthenticatedUser, incremenetVideoView);
 
 videoRouter.route("/upload").post(
   isAuthenticatedUser,

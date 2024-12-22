@@ -400,3 +400,31 @@ export const getVideoLikeData = AsyncHandler(
       );
   }
 );
+
+export const incremenetVideoView = AsyncHandler(
+  async (req: Request, res: Response, next: NextFunction) => {
+    const { videoId } = req.params as { videoId: string };
+
+    if (!isValidObjectId(videoId)) {
+      return next(
+        new ErrorHandler("VideoId is Invalid!", StatusCodes.BAD_REQUEST)
+      );
+    }
+
+    const video = await Video.findById(videoId);
+
+    if (!video) {
+      return next(new ErrorHandler("Video not found!", StatusCodes.NOT_FOUND));
+    }
+
+    await Video.findByIdAndUpdate(videoId, {
+      $inc: { views: 1 },
+    });
+
+    res
+      .status(StatusCodes.OK)
+      .json(
+        new APIResponse(StatusCodes.OK, "Video view incremented successfully")
+      );
+  }
+);
