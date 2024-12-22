@@ -644,7 +644,7 @@ export const getUserChannelProfile = AsyncHandler(
 
     return res.status(StatusCodes.OK).json(
       new APIResponse(StatusCodes.OK, "Channel data fetched successfully", {
-        channelData: channel,
+        ...channel[0],
       })
     );
   }

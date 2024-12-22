@@ -5,6 +5,7 @@ interface ILike extends Document {
   video?: Schema.Types.ObjectId;
   comment?: Schema.Types.ObjectId;
   tweet?: Schema.Types.ObjectId;
+  likeType: "like" | "dislike";
   likedBy: Schema.Types.ObjectId;
 }
 
@@ -25,6 +26,11 @@ const LikeSchema: Schema<ILike> = new Schema(
     tweet: {
       type: Schema.Types.ObjectId,
       ref: "Tweet",
+    },
+    likeType: {
+      type: String,
+      enum: ["like", "dislike"],
+      default: "like",
     },
     likedBy: {
       type: Schema.Types.ObjectId,

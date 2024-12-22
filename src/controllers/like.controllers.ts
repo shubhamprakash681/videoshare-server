@@ -13,6 +13,18 @@ import { ObjectId } from "mongodb";
 export const toggleVideoLike = AsyncHandler(
   async (req: Request, res: Response, next: NextFunction) => {
     const { videoId } = req.params as { videoId: string };
+    const { likeType } = req.query as {
+      likeType: "like" | "dislike" | "delete";
+    };
+
+    if (!["like", "dislike", "delete"].includes(likeType)) {
+      return next(
+        new ErrorHandler(
+          "Invalid likeType! It should be either 'like', 'dislike' or 'delete'",
+          StatusCodes.BAD_REQUEST
+        )
+      );
+    }
 
     if (!isValidObjectId(videoId)) {
       return next(
@@ -25,13 +37,28 @@ export const toggleVideoLike = AsyncHandler(
       likedBy: req.user?._id,
     });
     if (isLikedAlready) {
-      await Like.findByIdAndDelete(isLikedAlready._id);
+      if (likeType === "delete") {
+        await Like.findByIdAndDelete(isLikedAlready._id);
 
-      return res
-        .status(StatusCodes.OK)
-        .json(
-          new APIResponse(StatusCodes.OK, "Video removed from your Like List")
-        );
+        return res
+          .status(StatusCodes.OK)
+          .json(
+            new APIResponse(StatusCodes.OK, "Video removed from your Like List")
+          );
+      } else {
+        await Like.findByIdAndUpdate(isLikedAlready._id, {
+          likeType,
+        });
+
+        return res
+          .status(StatusCodes.OK)
+          .json(
+            new APIResponse(
+              StatusCodes.OK,
+              `Video ${likeType === "like" ? "Liked" : "Disliked"} Successfully`
+            )
+          );
+      }
     }
 
     const doesVideoExists = await Video.findById(videoId);
@@ -44,20 +71,47 @@ export const toggleVideoLike = AsyncHandler(
       );
     }
 
+    if (likeType === "delete") {
+      return next(
+        new ErrorHandler(
+          "You can't delete a like that you haven't made!",
+          StatusCodes.BAD_REQUEST
+        )
+      );
+    }
+
     await Like.create({
       video: videoId,
       likedBy: req.user?._id,
+      likeType: likeType === "dislike" ? "dislike" : "like",
     });
 
     res
       .status(StatusCodes.OK)
-      .json(new APIResponse(StatusCodes.OK, "Video Liked Successfully"));
+      .json(
+        new APIResponse(
+          StatusCodes.OK,
+          `Video ${likeType === "dislike" ? "Disliked" : "Liked"} Successfully`
+        )
+      );
   }
 );
 
 export const toggleCommentLike = AsyncHandler(
   async (req: Request, res: Response, next: NextFunction) => {
     const { commentId } = req.params as { commentId: string };
+    const { likeType } = req.query as {
+      likeType: "like" | "dislike" | "delete";
+    };
+
+    if (!["like", "dislike", "delete"].includes(likeType)) {
+      return next(
+        new ErrorHandler(
+          "Invalid likeType! It should be either 'like', 'dislike' or 'delete'",
+          StatusCodes.BAD_REQUEST
+        )
+      );
+    }
 
     if (!isValidObjectId(commentId)) {
       return next(
@@ -70,16 +124,33 @@ export const toggleCommentLike = AsyncHandler(
       likedBy: req.user?._id,
     });
     if (isLikedAlready) {
-      await Like.findByIdAndDelete(isLikedAlready._id);
+      if (likeType === "delete") {
+        await Like.findByIdAndDelete(isLikedAlready._id);
 
-      return res
-        .status(StatusCodes.OK)
-        .json(
-          new APIResponse(
-            StatusCodes.OK,
-            "Comment removed from your Liked comments List"
-          )
-        );
+        return res
+          .status(StatusCodes.OK)
+          .json(
+            new APIResponse(
+              StatusCodes.OK,
+              "Comment removed from your Like List"
+            )
+          );
+      } else {
+        await Like.findByIdAndUpdate(isLikedAlready._id, {
+          likeType,
+        });
+
+        return res
+          .status(StatusCodes.OK)
+          .json(
+            new APIResponse(
+              StatusCodes.OK,
+              `Comment ${
+                likeType === "like" ? "Liked" : "Disliked"
+              } Successfully`
+            )
+          );
+      }
     }
 
     const doesCommentExists = await Comment.findById(commentId);
@@ -92,20 +163,49 @@ export const toggleCommentLike = AsyncHandler(
       );
     }
 
+    if (likeType === "delete") {
+      return next(
+        new ErrorHandler(
+          "You can't delete a like that you haven't made!",
+          StatusCodes.BAD_REQUEST
+        )
+      );
+    }
+
     await Like.create({
       comment: commentId,
       likedBy: req.user?._id,
+      likeType: likeType === "dislike" ? "dislike" : "like",
     });
 
     res
       .status(StatusCodes.OK)
-      .json(new APIResponse(StatusCodes.OK, "Comment Liked Successfully"));
+      .json(
+        new APIResponse(
+          StatusCodes.OK,
+          `Comment ${
+            likeType === "dislike" ? "Disliked" : "Liked"
+          } Successfully`
+        )
+      );
   }
 );
 
 export const toggleTweetLike = AsyncHandler(
   async (req: Request, res: Response, next: NextFunction) => {
     const { tweetId } = req.params as { tweetId: string };
+    const { likeType } = req.query as {
+      likeType: "like" | "dislike" | "delete";
+    };
+
+    if (!["like", "dislike", "delete"].includes(likeType)) {
+      return next(
+        new ErrorHandler(
+          "Invalid likeType! It should be either 'like', 'dislike' or 'delete'",
+          StatusCodes.BAD_REQUEST
+        )
+      );
+    }
 
     if (!isValidObjectId(tweetId)) {
       return next(
@@ -118,16 +218,31 @@ export const toggleTweetLike = AsyncHandler(
       likedBy: req.user?._id,
     });
     if (isLikedAlready) {
-      await Like.findByIdAndDelete(isLikedAlready._id);
+      if (likeType === "delete") {
+        await Like.findByIdAndDelete(isLikedAlready._id);
 
-      return res
-        .status(StatusCodes.OK)
-        .json(
-          new APIResponse(
-            StatusCodes.OK,
-            "Tweet removed from your Liked Tweets List"
-          )
-        );
+        return res
+          .status(StatusCodes.OK)
+          .json(
+            new APIResponse(
+              StatusCodes.OK,
+              "Tweet removed from your Liked Tweets List"
+            )
+          );
+      } else {
+        await Like.findByIdAndUpdate(isLikedAlready._id, {
+          likeType,
+        });
+
+        return res
+          .status(StatusCodes.OK)
+          .json(
+            new APIResponse(
+              StatusCodes.OK,
+              `Tweet ${likeType === "like" ? "Liked" : "Disliked"} Successfully`
+            )
+          );
+      }
     }
 
     const doesTweetExists = await Tweet.findById(tweetId);
@@ -140,14 +255,29 @@ export const toggleTweetLike = AsyncHandler(
       );
     }
 
+    if (likeType === "delete") {
+      return next(
+        new ErrorHandler(
+          "You can't delete a like that you haven't made!",
+          StatusCodes.BAD_REQUEST
+        )
+      );
+    }
+
     await Like.create({
       tweet: tweetId,
       likedBy: req.user?._id,
+      likeType: likeType === "dislike" ? "dislike" : "like",
     });
 
     res
       .status(StatusCodes.OK)
-      .json(new APIResponse(StatusCodes.OK, "Tweet Liked Successfully"));
+      .json(
+        new APIResponse(
+          StatusCodes.OK,
+          `Tweet ${likeType === "dislike" ? "Disliked" : "Liked"} Successfully`
+        )
+      );
   }
 );
 
@@ -164,6 +294,7 @@ export const getLikedVideos = AsyncHandler(
       {
         $match: {
           likedBy: new ObjectId(userId as string),
+          likeType: "like",
         },
       },
       {
