@@ -42,7 +42,12 @@ export const toggleVideoLike = AsyncHandler(
         return res
           .status(StatusCodes.OK)
           .json(
-            new APIResponse(StatusCodes.OK, "Video removed from your Like List")
+            new APIResponse(
+              StatusCodes.OK,
+              `Video removed from your ${
+                isLikedAlready.likeType === "like" ? "Like" : "Dislike"
+              } List`
+            )
           );
       } else {
         await Like.findByIdAndUpdate(isLikedAlready._id, {
@@ -131,7 +136,9 @@ export const toggleCommentLike = AsyncHandler(
           .json(
             new APIResponse(
               StatusCodes.OK,
-              "Comment removed from your Like List"
+              `Comment removed from your ${
+                isLikedAlready.likeType === "like" ? "Like" : "Dislike"
+              } List`
             )
           );
       } else {
@@ -225,7 +232,9 @@ export const toggleTweetLike = AsyncHandler(
           .json(
             new APIResponse(
               StatusCodes.OK,
-              "Tweet removed from your Liked Tweets List"
+              `Tweet removed from your ${
+                isLikedAlready.likeType === "like" ? "Like" : "Dislike"
+              } List`
             )
           );
       } else {
