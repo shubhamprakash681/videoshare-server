@@ -7,7 +7,7 @@ import Video from "../models/Video.model";
 import Comment from "../models/Comment.model";
 import APIResponse from "../utils/APIResponse";
 import Like from "../models/Like.model";
-import { ObjectId } from "mongodb";
+import mongoose from "mongoose";
 
 export const addVideoComment = AsyncHandler(
   async (req: Request, res: Response, next: NextFunction) => {
@@ -159,7 +159,7 @@ export const getAllVideoComments = AsyncHandler(
       // stage 1 - for filtering out comments for specific videos
       {
         $match: {
-          video: new ObjectId(videoId),
+          video: new mongoose.Types.ObjectId(videoId),
         },
       },
 

@@ -4,8 +4,7 @@ import ErrorHandler from "../utils/ErrorHandler";
 import { StatusCodes } from "http-status-codes";
 import Tweet from "../models/Tweet.model";
 import APIResponse from "../utils/APIResponse";
-import { isValidObjectId } from "mongoose";
-import { ObjectId } from "mongodb";
+import mongoose, { isValidObjectId } from "mongoose";
 
 export const createTweet = AsyncHandler(
   async (req: Request, res: Response, next: NextFunction) => {
@@ -148,7 +147,7 @@ export const getUserTweets = AsyncHandler(
     const userTweetAggregate = Tweet.aggregate([
       {
         $match: {
-          owner: new ObjectId(userId as string),
+          owner: new mongoose.Types.ObjectId(userId as string),
         },
       },
       {
@@ -196,7 +195,10 @@ export const getUserTweets = AsyncHandler(
           isLiked: {
             $cond: {
               if: {
-                $in: [new ObjectId(req.user?._id as string), "$likes.likedBy"],
+                $in: [
+                  new mongoose.Types.ObjectId(req.user?._id as string),
+                  "$likes.likedBy",
+                ],
               },
               then: true,
               else: false,

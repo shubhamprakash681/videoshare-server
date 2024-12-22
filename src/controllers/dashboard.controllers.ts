@@ -1,12 +1,12 @@
 import { NextFunction, Request, Response } from "express";
 import AsyncHandler from "../utils/AsyncHandler";
 import Video from "../models/Video.model";
-import { ObjectId } from "mongodb";
 import Subscription from "../models/Subscription.model";
 import { StatusCodes } from "http-status-codes";
 import APIResponse from "../utils/APIResponse";
 import ErrorHandler from "../utils/ErrorHandler";
 import { deleteCloudinaryFile } from "../utils/cloudinary";
+import mongoose from "mongoose";
 
 // Get the personal channel stats like total video views, total subscribers, total videos, total likes etc.
 export const getChannelStats = AsyncHandler(
@@ -17,7 +17,7 @@ export const getChannelStats = AsyncHandler(
       // statge 1- filter videos based on user id
       {
         $match: {
-          owner: new ObjectId(userId as string),
+          owner: new mongoose.Types.ObjectId(userId as string),
         },
       },
 
@@ -52,7 +52,7 @@ export const getChannelStats = AsyncHandler(
       // statge 1- filter subscriptions based on user id
       {
         $match: {
-          channel: new ObjectId(userId as string),
+          channel: new mongoose.Types.ObjectId(userId as string),
         },
       },
 
@@ -93,7 +93,7 @@ export const getChannelVideos = AsyncHandler(
       // stage 1 - filter all videos uploaded by current user
       {
         $match: {
-          owner: new ObjectId(req.user?._id as string),
+          owner: new mongoose.Types.ObjectId(req.user?._id as string),
         },
       },
 

@@ -1,6 +1,6 @@
 import { NextFunction, Request, Response } from "express";
 import AsyncHandler from "../utils/AsyncHandler";
-import { isValidObjectId } from "mongoose";
+import mongoose, { isValidObjectId } from "mongoose";
 import ErrorHandler from "../utils/ErrorHandler";
 import { StatusCodes } from "http-status-codes";
 import Like from "../models/Like.model";
@@ -8,7 +8,6 @@ import APIResponse from "../utils/APIResponse";
 import Video from "../models/Video.model";
 import Comment from "../models/Comment.model";
 import Tweet from "../models/Tweet.model";
-import { ObjectId } from "mongodb";
 
 export const toggleVideoLike = AsyncHandler(
   async (req: Request, res: Response, next: NextFunction) => {
@@ -293,7 +292,7 @@ export const getLikedVideos = AsyncHandler(
     const likedVideosAggregate = Like.aggregate([
       {
         $match: {
-          likedBy: new ObjectId(userId as string),
+          likedBy: new mongoose.Types.ObjectId(userId as string),
           likeType: "like",
         },
       },

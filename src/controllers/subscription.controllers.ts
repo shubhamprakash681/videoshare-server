@@ -1,11 +1,10 @@
 import { NextFunction, Request, Response } from "express";
 import AsyncHandler from "../utils/AsyncHandler";
-import { isValidObjectId } from "mongoose";
+import mongoose, { isValidObjectId } from "mongoose";
 import ErrorHandler from "../utils/ErrorHandler";
 import { StatusCodes } from "http-status-codes";
 import Subscription from "../models/Subscription.model";
 import APIResponse from "../utils/APIResponse";
-import { ObjectId } from "mongodb";
 
 export const toggleChannelSubscription = AsyncHandler(
   async (req: Request, res: Response, next: NextFunction) => {
@@ -57,7 +56,7 @@ export const getSubscribedChannels = AsyncHandler(
     const subscribedChannelsAggregate = Subscription.aggregate([
       {
         $match: {
-          subscriber: new ObjectId(userId),
+          subscriber: new mongoose.Types.ObjectId(userId),
         },
       },
 

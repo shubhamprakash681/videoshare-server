@@ -11,9 +11,8 @@ import {
 import User, { IUser } from "../models/User.model";
 import { deleteCloudinaryFile, uploadOnCloudinary } from "../utils/cloudinary";
 import APIResponse from "../utils/APIResponse";
-import { Document } from "mongoose";
+import mongoose, { Document } from "mongoose";
 import jwt from "jsonwebtoken";
-import { ObjectId } from "mongodb";
 
 interface IRegisterUserBody {
   username: string;
@@ -653,9 +652,9 @@ export const getUserChannelProfile = AsyncHandler(
 export const getWatchHistory = AsyncHandler(
   async (req: Request, res: Response, next: NextFunction) => {
     // Note: This conversion is required because we need to convert string IDs to mongodb id
-    // as aggregation pipeline does not automatically performs this this conversion
+    // as aggregation pipeline does not automatically performs this conversion
     // unlike in case of mongoose (which automatically performs this kind of conversion)
-    const userId = new ObjectId(req.user?._id! as ObjectId);
+    const userId = new mongoose.Types.ObjectId(req.user?._id as string);
 
     const user = await User.aggregate([
       // 1st stage - to find user
