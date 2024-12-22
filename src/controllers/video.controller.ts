@@ -1,7 +1,7 @@
 import { NextFunction, Request, Response } from "express";
 import Video, { IVideo } from "../models/Video.model";
 import AsyncHandler from "../utils/AsyncHandler";
-import mongoose, { PipelineStage } from "mongoose";
+import mongoose, { isValidObjectId, PipelineStage } from "mongoose";
 import { StatusCodes } from "http-status-codes";
 import APIResponse from "../utils/APIResponse";
 import ErrorHandler from "../utils/ErrorHandler";
@@ -101,33 +101,6 @@ export const getAllVideos = AsyncHandler(
         },
       }
     );
-
-    // lookup for populating likes count
-    pipeline.push(
-      {
-        $lookup: {
-          from: "likes",
-          localField: "_id",
-          foreignField: "video",
-          as: "likes",
-          pipeline: [
-            {
-              $match: {
-                likeType: "like",
-              },
-            },
-          ],
-        },
-      },
-      {
-        $addFields: {
-          likes: {
-            $size: "$likes",
-          },
-        },
-      }
-    );
-
     // console.log(pipeline);
 
     const videoAggregate = Video.aggregate(pipeline);
@@ -311,5 +284,119 @@ export const updateVideo = AsyncHandler(
         video: modifiedVideo,
       })
     );
+  }
+);
+
+export const getVideoLikeData = AsyncHandler(
+  async (req: Request, res: Response, next: NextFunction) => {
+    const { videoId } = req.params as { videoId: string };
+
+    if (!isValidObjectId(videoId)) {
+      return next(
+        new ErrorHandler("VideoId is Invalid!", StatusCodes.BAD_REQUEST)
+      );
+    }
+
+    const videoLikeAggregate = Video.aggregate([
+      {
+        $match: { isPublic: true, _id: new mongoose.Types.ObjectId(videoId) },
+      },
+
+      {
+        $lookup: {
+          from: "likes",
+          localField: "_id",
+          foreignField: "video",
+          as: "allLikes",
+          pipeline: [
+            {
+              $match: {
+                likeType: "like",
+              },
+            },
+          ],
+        },
+      },
+
+      {
+        $lookup: {
+          from: "likes",
+          localField: "_id",
+          foreignField: "video",
+          as: "allDislikes",
+          pipeline: [
+            {
+              $match: {
+                likeType: "dislike",
+              },
+            },
+          ],
+        },
+      },
+
+      {
+        $addFields: {
+          isLiked: {
+            $cond: {
+              if: {
+                $in: [
+                  new mongoose.Types.ObjectId(req.user?._id?.toString()),
+                  "$allLikes.likedBy",
+                ],
+              },
+              then: true,
+              else: false,
+            },
+          },
+
+          isDisliked: {
+            $cond: {
+              if: {
+                $in: [
+                  new mongoose.Types.ObjectId(req.user?._id?.toString()),
+                  "$allDislikes.likedBy",
+                ],
+              },
+              then: true,
+              else: false,
+            },
+          },
+
+          likeCount: {
+            $size: "$allLikes",
+          },
+        },
+      },
+
+      {
+        $project: {
+          _id: 0,
+          allLikes: 0,
+          allDislikes: 0,
+          owner: 0,
+          title: 0,
+          isPublic: 0,
+          description: 0,
+          duration: 0,
+          updatedAt: 0,
+          createdAt: 0,
+          views: 0,
+          videoFile: 0,
+          thumbnail: 0,
+        },
+      },
+    ]);
+
+    const videoLikeData = await Video.aggregatePaginate(videoLikeAggregate);
+
+    res
+      .status(StatusCodes.OK)
+      .json(
+        new APIResponse(
+          StatusCodes.OK,
+          "Likes data fetched successfully",
+          videoLikeData
+        )
+      );
   }
 );
