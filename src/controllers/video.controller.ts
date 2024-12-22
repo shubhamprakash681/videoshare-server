@@ -395,7 +395,7 @@ export const getVideoLikeData = AsyncHandler(
         new APIResponse(
           StatusCodes.OK,
           "Likes data fetched successfully",
-          videoLikeData
+          videoLikeData.docs[0]
         )
       );
   }
