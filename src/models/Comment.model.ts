@@ -4,6 +4,7 @@ import mongooseAggregatePaginate from "mongoose-aggregate-paginate-v2";
 interface IComment extends Document {
   content: string;
   video: Schema.Types.ObjectId;
+  parentComment?: Schema.Types.ObjectId;
   owner: Schema.Types.ObjectId;
 }
 
@@ -20,7 +21,12 @@ const CommentSchema: Schema<IComment> = new Schema(
     video: {
       type: Schema.Types.ObjectId,
       ref: "Video",
-      required: [true, "Video reference is required to create a Comment"],
+      required: [true, "Video is required to add Comment"],
+    },
+    parentComment: {
+      type: Schema.Types.ObjectId,
+      ref: "Comment",
+      default: null,
     },
     owner: {
       type: Schema.Types.ObjectId,

@@ -1,0 +1,5 @@
+1. I have limited replying to a comment upto 2 levels only.
+2. ie, replies to a reply of a comment will be stored as reply of the parent comment only (and not as reply of reply of the comment)
+3. Reason- MongoDB aggregation pipelines don't natively support recursive processing. So not able to populate 3rd (and higher) level comments through Aggregation pipeline
+4. Note: Same limitation is also currently there in YT also.
+5. Solution: Limitation will be added in Frontend side- While replying to child comment, comment Id of parent comment will be sent to API

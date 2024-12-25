@@ -12,7 +12,11 @@ import mongoose from "mongoose";
 export const addVideoComment = AsyncHandler(
   async (req: Request, res: Response, next: NextFunction) => {
     const { videoId } = req.params as { videoId: string };
-    const { content } = req.body as { content: string };
+
+    const { content, parentCommentId } = req.body as {
+      content: string;
+      parentCommentId: string | null;
+    };
 
     const validationRes = addCommentValidator.safeParse({ content });
 
@@ -34,6 +38,37 @@ export const addVideoComment = AsyncHandler(
     const video = await Video.findById(videoId);
     if (!video) {
       return next(new ErrorHandler("Video Not Found!!", StatusCodes.NOT_FOUND));
+    }
+
+    if (parentCommentId) {
+      const parentComment = await Comment.findById(parentCommentId);
+      if (!parentComment) {
+        return next(
+          new ErrorHandler("Parent Comment Not Found!!", StatusCodes.NOT_FOUND)
+        );
+      }
+
+      const comment = await Comment.create({
+        content,
+        video: videoId,
+        parentComment: parentCommentId,
+        owner: req.user?._id,
+      });
+
+      if (!comment) {
+        return next(
+          new ErrorHandler(
+            "Comment Add Failed! Please try again after some time.",
+            StatusCodes.INTERNAL_SERVER_ERROR
+          )
+        );
+      }
+
+      return res
+        .status(StatusCodes.CREATED)
+        .json(
+          new APIResponse(StatusCodes.CREATED, "Comment added successfully")
+        );
     }
 
     const comment = await Comment.create({
@@ -163,7 +198,70 @@ export const getAllVideoComments = AsyncHandler(
         },
       },
 
-      // stage 2 - populating owner data
+      // stage 2 - Nested pipeine for populating comment replies
+      {
+        $lookup: {
+          from: "comments",
+          localField: "_id",
+          foreignField: "parentComment",
+          as: "replies",
+          pipeline: [
+            {
+              $lookup: {
+                from: "users",
+                localField: "owner",
+                foreignField: "_id",
+                as: "owner",
+              },
+            },
+            {
+              $lookup: {
+                from: "likes",
+                localField: "_id",
+                foreignField: "comment",
+                as: "likes",
+              },
+            },
+
+            {
+              $addFields: {
+                owner: {
+                  $first: "$owner",
+                },
+                totalLikesCount: {
+                  $size: "$likes",
+                },
+
+                isLiked: {
+                  $cond: {
+                    if: {
+                      $in: ["", "$likes.likedBy"],
+                    },
+                    then: true,
+                    else: false,
+                  },
+                },
+              },
+            },
+
+            {
+              $project: {
+                "owner.fullname": 1,
+                "owner.username": 1,
+                "owner.avatar": "$owner.avatar.url",
+
+                createdAt: 1,
+                updatedAt: 1,
+                content: 1,
+                totalLikesCount: 1,
+                isLiked: 1,
+              },
+            },
+          ],
+        },
+      },
+
+      // stage 3 - populating owner data
       {
         $lookup: {
           from: "users",
@@ -173,20 +271,13 @@ export const getAllVideoComments = AsyncHandler(
         },
       },
 
-      // stage 3- for populating comment likes
+      // stage 4 - for populating comment likes
       {
         $lookup: {
           from: "likes",
           localField: "_id",
           foreignField: "comment",
           as: "likes",
-        },
-      },
-
-      // stage 4 - sorting
-      {
-        $sort: {
-          createdAt: -1,
         },
       },
 
@@ -212,13 +303,28 @@ export const getAllVideoComments = AsyncHandler(
         },
       },
 
-      // stage 6 - projection stage
+      // stage 6 - sorting of first level comments
+      {
+        $sort: {
+          createdAt: -1,
+        },
+      },
+
+      // stage 7 - filtering out parent comments as child comments are already populated
+      {
+        $match: {
+          parentComment: null,
+        },
+      },
+
+      // stage 8 - projection stage
       {
         $project: {
           "owner.fullname": 1,
           "owner.username": 1,
-          "owner.avatar.url": 1,
+          "owner.avatar": "$owner.avatar.url",
 
+          replies: 1,
           createdAt: 1,
           updatedAt: 1,
           content: 1,
