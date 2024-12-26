@@ -219,7 +219,29 @@ export const getAllVideoComments = AsyncHandler(
                 from: "likes",
                 localField: "_id",
                 foreignField: "comment",
-                as: "likes",
+                as: "allLikes",
+                pipeline: [
+                  {
+                    $match: {
+                      likeType: "like",
+                    },
+                  },
+                ],
+              },
+            },
+            {
+              $lookup: {
+                from: "likes",
+                localField: "_id",
+                foreignField: "comment",
+                as: "allDislikes",
+                pipeline: [
+                  {
+                    $match: {
+                      likeType: "dislike",
+                    },
+                  },
+                ],
               },
             },
 
@@ -229,13 +251,28 @@ export const getAllVideoComments = AsyncHandler(
                   $first: "$owner",
                 },
                 totalLikesCount: {
-                  $size: "$likes",
+                  $size: "$allLikes",
                 },
 
                 isLiked: {
                   $cond: {
                     if: {
-                      $in: ["", "$likes.likedBy"],
+                      $in: [
+                        new mongoose.Types.ObjectId(req.user?._id?.toString()),
+                        "$allLikes.likedBy",
+                      ],
+                    },
+                    then: true,
+                    else: false,
+                  },
+                },
+                isDisliked: {
+                  $cond: {
+                    if: {
+                      $in: [
+                        new mongoose.Types.ObjectId(req.user?._id?.toString()),
+                        "$allDislikes.likedBy",
+                      ],
                     },
                     then: true,
                     else: false,
@@ -255,6 +292,7 @@ export const getAllVideoComments = AsyncHandler(
                 content: 1,
                 totalLikesCount: 1,
                 isLiked: 1,
+                isDisliked: 1,
               },
             },
           ],
@@ -277,24 +315,63 @@ export const getAllVideoComments = AsyncHandler(
           from: "likes",
           localField: "_id",
           foreignField: "comment",
-          as: "likes",
+          as: "allLikes",
+          pipeline: [
+            {
+              $match: {
+                likeType: "like",
+              },
+            },
+          ],
         },
       },
 
-      // stage 5 - adding totalLikesCount & isLiked for each comment
+      // stage 5 - for populating comment dislikes
+      {
+        $lookup: {
+          from: "likes",
+          localField: "_id",
+          foreignField: "comment",
+          as: "allDislikes",
+          pipeline: [
+            {
+              $match: {
+                likeType: "dislike",
+              },
+            },
+          ],
+        },
+      },
+
+      // stage 6 - adding totalLikesCount, isLiked & isDisliked for each comment
       {
         $addFields: {
           owner: {
             $first: "$owner",
           },
           totalLikesCount: {
-            $size: "$likes",
+            $size: "$allLikes",
           },
 
           isLiked: {
             $cond: {
               if: {
-                $in: ["", "$likes.likedBy"],
+                $in: [
+                  new mongoose.Types.ObjectId(req.user?._id?.toString()),
+                  "$allLikes.likedBy",
+                ],
+              },
+              then: true,
+              else: false,
+            },
+          },
+          isDisliked: {
+            $cond: {
+              if: {
+                $in: [
+                  new mongoose.Types.ObjectId(req.user?._id?.toString()),
+                  "$allDislikes.likedBy",
+                ],
               },
               then: true,
               else: false,
@@ -330,6 +407,7 @@ export const getAllVideoComments = AsyncHandler(
           content: 1,
           totalLikesCount: 1,
           isLiked: 1,
+          isDisliked: 1,
         },
       },
     ]);
