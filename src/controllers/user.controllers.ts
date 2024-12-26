@@ -612,7 +612,12 @@ export const getUserChannelProfile = AsyncHandler(
           // variable to store logged in user is subscribed to this channel (where username = req.params.username)
           isSubscribed: {
             $cond: {
-              if: { $in: [req.user?._id, "$subscribers.subscriber"] },
+              if: {
+                $in: [
+                  new mongoose.Types.ObjectId(req.user?._id?.toString()),
+                  "$subscribers.subscriber",
+                ],
+              },
               then: true,
               else: false,
             },
