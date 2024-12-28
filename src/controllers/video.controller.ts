@@ -6,6 +6,7 @@ import { StatusCodes } from "http-status-codes";
 import APIResponse from "../utils/APIResponse";
 import ErrorHandler from "../utils/ErrorHandler";
 import { deleteCloudinaryFile, uploadOnCloudinary } from "../utils/cloudinary";
+import User from "../models/User.model";
 
 type getAllVideosQuery = {
   page: number;
@@ -412,14 +413,34 @@ export const incremenetVideoView = AsyncHandler(
     }
 
     const video = await Video.findById(videoId);
+    const user = await User.findById(req.user?._id);
 
     if (!video) {
       return next(new ErrorHandler("Video not found!", StatusCodes.NOT_FOUND));
+    }
+    if (!user) {
+      return next(new ErrorHandler("User not found!", StatusCodes.BAD_REQUEST));
     }
 
     await Video.findByIdAndUpdate(videoId, {
       $inc: { views: 1 },
     });
+
+    // update user's watch history
+    const existingEntry = user?.watchHistory.find(
+      (entry) => entry.videoId.toString() === videoId
+    );
+
+    if (existingEntry) {
+      existingEntry.watchedAt = new Date();
+    } else {
+      user.watchHistory.push({
+        videoId,
+        watchedAt: new Date(),
+      });
+    }
+
+    await user.save();
 
     res
       .status(StatusCodes.OK)

@@ -4,6 +4,7 @@ import bcrypt from "bcrypt";
 import aggregatePaginate from "mongoose-aggregate-paginate-v2";
 import { model } from "mongoose";
 
+type WatchHistory = { videoId: string; watchedAt: Date };
 export interface IUser extends Document {
   username: string;
   email: string;
@@ -16,9 +17,10 @@ export interface IUser extends Document {
     public_id: string;
     url: string;
   };
-  watchHistory: Schema.Types.ObjectId[];
+  watchHistory: WatchHistory[];
   password: string;
   refreshToken: string;
+  channelDescription?: string;
 
   comparePassword: (enteredPassword: string) => Promise<boolean>;
   generateAccessToken: () => string;
@@ -78,11 +80,15 @@ const userSchema: Schema<IUser> = new Schema(
         // required: true,
       },
     },
+    channelDescription: {
+      type: String,
+      trim: true,
+    },
 
     watchHistory: [
       {
-        type: Schema.Types.ObjectId,
-        ref: "Video",
+        videoId: { type: Schema.Types.ObjectId, ref: "Video" },
+        watchedAt: { type: Date, default: Date.now },
       },
     ],
 
