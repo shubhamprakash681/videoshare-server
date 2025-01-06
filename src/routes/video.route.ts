@@ -4,6 +4,7 @@ import {
   getVideoLikeData,
   incremenetVideoView,
   updateVideo,
+  updateVideoPlaylists,
   uploadVideo,
 } from "../controllers/video.controller";
 import { isAuthenticatedUser } from "../middlewares/Auth.middleware";
@@ -16,6 +17,9 @@ videoRouter.route("/likes/:videoId").get(isAuthenticatedUser, getVideoLikeData);
 videoRouter
   .route("/view/:videoId")
   .patch(isAuthenticatedUser, incremenetVideoView);
+videoRouter
+  .route("/playlist/:videoId")
+  .patch(isAuthenticatedUser, updateVideoPlaylists);
 
 videoRouter.route("/upload").post(
   isAuthenticatedUser,

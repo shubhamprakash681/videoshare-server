@@ -6,6 +6,7 @@ import dashboardRouter from "./dashboard.route";
 import likeRouter from "./like.route";
 import subscriptionRouter from "./subscription.route";
 import tweetRouter from "./tweet.route";
+import playlistRouter from "./playlist.route";
 
 export {
   commentRouter,
@@ -16,4 +17,5 @@ export {
   tweetRouter,
   userRouter,
   videoRouter,
+  playlistRouter,
 };

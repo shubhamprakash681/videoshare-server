@@ -2,8 +2,9 @@ import { Document, Model, model, Schema } from "mongoose";
 import mongooseAggregatePaginate from "mongoose-aggregate-paginate-v2";
 
 interface IPlaylist extends Document {
-  name: string;
+  title: string;
   description?: string;
+  visibility: "public" | "private";
   videos: Schema.Types.ObjectId[];
   owner: Schema.Types.ObjectId;
 }
@@ -14,12 +15,17 @@ interface IPlaylistModel extends Model<IPlaylist> {
 
 const PlaylistSchema: Schema<IPlaylist> = new Schema(
   {
-    name: {
+    title: {
       type: String,
-      required: [true, "Playlist Name is required"],
+      required: [true, "Playlist Title is required"],
     },
     description: {
       type: String,
+    },
+    visibility: {
+      type: String,
+      enum: ["public", "private"],
+      default: "private",
     },
     videos: [
       {
@@ -39,8 +45,8 @@ const PlaylistSchema: Schema<IPlaylist> = new Schema(
 
 PlaylistSchema.plugin(mongooseAggregatePaginate);
 
-const PlaylistModel: IPlaylistModel = model<IPlaylist, IPlaylistModel>(
+const Playlist: IPlaylistModel = model<IPlaylist, IPlaylistModel>(
   "Playlist",
   PlaylistSchema
 );
-export default PlaylistModel;
+export default Playlist;

@@ -7,6 +7,7 @@ import APIResponse from "../utils/APIResponse";
 import ErrorHandler from "../utils/ErrorHandler";
 import { deleteCloudinaryFile, uploadOnCloudinary } from "../utils/cloudinary";
 import User from "../models/User.model";
+import Playlist from "../models/Playlist.model";
 
 type getAllVideosQuery = {
   page: number;
@@ -447,5 +448,59 @@ export const incremenetVideoView = AsyncHandler(
       .json(
         new APIResponse(StatusCodes.OK, "Video view incremented successfully")
       );
+  }
+);
+
+export const updateVideoPlaylists = AsyncHandler(
+  (req: Request, res: Response, next: NextFunction) => {
+    const { videoId } = req.params as { videoId: string };
+
+    const { addToPlaylistIds, removeFromPlaylistIds } = req.body as {
+      addToPlaylistIds: string[];
+      removeFromPlaylistIds: string[];
+    };
+
+    if (!isValidObjectId(videoId)) {
+      return next(new ErrorHandler("Invalid Video!", StatusCodes.BAD_REQUEST));
+    }
+
+    if (
+      !addToPlaylistIds.every((id) => isValidObjectId(id)) ||
+      !removeFromPlaylistIds.every((id) => isValidObjectId(id))
+    ) {
+      return next(
+        new ErrorHandler("Invalid Playlist!", StatusCodes.BAD_REQUEST)
+      );
+    }
+
+    [...addToPlaylistIds, ...removeFromPlaylistIds].forEach(
+      async (playlistId) => {
+        const playlist = await Playlist.findById(playlistId);
+        if (playlist?.owner.toString() !== req.user?._id?.toString()) {
+          return next(
+            new ErrorHandler(
+              "You are not allowed to update this playlist",
+              StatusCodes.UNAUTHORIZED
+            )
+          );
+        }
+      }
+    );
+
+    addToPlaylistIds.forEach(async (playlistId) => {
+      await Playlist.findByIdAndUpdate(playlistId, {
+        $addToSet: { videos: videoId },
+      });
+    });
+
+    removeFromPlaylistIds.forEach(async (playlistId) => {
+      await Playlist.findByIdAndUpdate(playlistId, {
+        $pull: { videos: videoId },
+      });
+    });
+
+    res
+      .status(StatusCodes.OK)
+      .json(new APIResponse(StatusCodes.OK, "Playlists Updated"));
   }
 );
