@@ -182,6 +182,89 @@ export const getPlaylists = AsyncHandler(
       );
   }
 );
+export const getPlaylistData = AsyncHandler(
+  async (req: Request, res: Response, next: NextFunction) => {
+    const { playlistId } = req.params as { playlistId: string };
+
+    if (!playlistId || !isValidObjectId(playlistId)) {
+      return next(
+        new ErrorHandler("Invalid Playlist ID", StatusCodes.BAD_REQUEST)
+      );
+    }
+
+    const playlistAggregate = Playlist.aggregate([
+      {
+        $match: {
+          _id: new mongoose.Types.ObjectId(playlistId),
+        },
+      },
+
+      {
+        $lookup: {
+          from: "videos",
+          localField: "videos",
+          foreignField: "_id",
+          as: "videos",
+          pipeline: [
+            {
+              $match: {
+                isPublic: true,
+              },
+            },
+
+            {
+              $lookup: {
+                from: "users",
+                localField: "owner",
+                foreignField: "_id",
+                as: "owner",
+                pipeline: [
+                  {
+                    $project: {
+                      fullname: 1,
+                      username: 1,
+                      avatar: "$avatar.url",
+                    },
+                  },
+                ],
+              },
+            },
+
+            {
+              $unwind: {
+                path: "$owner",
+              },
+            },
+          ],
+        },
+      },
+
+      {
+        $sort: {
+          updatedAt: -1,
+        },
+      },
+    ]);
+
+    const playlists = await Playlist.aggregatePaginate(playlistAggregate);
+
+    if (!playlists.docs.length) {
+      return next(
+        new ErrorHandler("Playlist not found!", StatusCodes.NOT_FOUND)
+      );
+    }
+
+    res
+      .status(StatusCodes.OK)
+      .json(
+        new APIResponse(
+          StatusCodes.OK,
+          "Playlist fetched successfully",
+          playlists
+        )
+      );
+  }
+);
 
 // Endpoint for fetching all playlist options for a video with conditional check if the video is already added to the playlist
 export const getPlaylistOptions = AsyncHandler(

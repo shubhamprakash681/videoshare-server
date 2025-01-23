@@ -3,15 +3,23 @@ import { isAuthenticatedUser } from "../middlewares/Auth.middleware";
 import {
   createPlaylist,
   deletePlaylist,
+  getPlaylistData,
   getPlaylistOptions,
   getPlaylists,
 } from "../controllers/playlist.controller";
 const playlistRouter = express.Router();
 
-playlistRouter.use(isAuthenticatedUser);
+playlistRouter
+  .route("/")
+  .post(isAuthenticatedUser, createPlaylist)
+  .get(isAuthenticatedUser, getPlaylists);
+playlistRouter
+  .route("/options/:videoId")
+  .get(isAuthenticatedUser, getPlaylistOptions);
+playlistRouter
+  .route("/:playlistId")
+  .delete(isAuthenticatedUser, deletePlaylist);
 
-playlistRouter.route("/").post(createPlaylist).get(getPlaylists);
-playlistRouter.route("/options/:videoId").get(getPlaylistOptions);
-playlistRouter.route("/:playlistId").delete(deletePlaylist);
+playlistRouter.route("/:playlistId").get(getPlaylistData);
 
 export default playlistRouter;
