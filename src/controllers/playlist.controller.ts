@@ -396,11 +396,11 @@ export const updatePlaylist = AsyncHandler(
           foreignField: "_id",
           as: "videos",
           pipeline: [
-            // {
-            //   $match: {
-            //     isPublic: true,
-            //   },
-            // },
+            {
+              $match: {
+                isPublic: true,
+              },
+            },
 
             {
               $lookup: {
