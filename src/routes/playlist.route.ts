@@ -6,6 +6,7 @@ import {
   getPlaylistData,
   getPlaylistOptions,
   getPlaylists,
+  updatePlaylist,
 } from "../controllers/playlist.controller";
 const playlistRouter = express.Router();
 
@@ -18,6 +19,7 @@ playlistRouter
   .get(isAuthenticatedUser, getPlaylistOptions);
 playlistRouter
   .route("/:playlistId")
+  .put(isAuthenticatedUser, updatePlaylist)
   .delete(isAuthenticatedUser, deletePlaylist);
 
 playlistRouter.route("/:playlistId").get(getPlaylistData);
