@@ -104,6 +104,7 @@ export const getPlaylists = AsyncHandler(
       {
         $lookup: {
           from: "videos",
+          let: { parentVideos: "$videos" }, // Pass the videos array from the parent document
           localField: "videos",
           foreignField: "_id",
           as: "videos",
@@ -111,6 +112,15 @@ export const getPlaylists = AsyncHandler(
             {
               $match: {
                 isPublic: true,
+              },
+            },
+
+            {
+              $addFields: {
+                // use videos array in local scope to assign index to each video doc
+                sortIndex: {
+                  $indexOfArray: ["$$parentVideos", "$_id"],
+                },
               },
             },
 
@@ -135,6 +145,18 @@ export const getPlaylists = AsyncHandler(
             {
               $unwind: {
                 path: "$owner",
+              },
+            },
+
+            {
+              $sort: {
+                sortIndex: 1,
+              },
+            },
+
+            {
+              $project: {
+                sortIndex: 0,
               },
             },
           ],
@@ -202,6 +224,7 @@ export const getPlaylistData = AsyncHandler(
       {
         $lookup: {
           from: "videos",
+          let: { parentVideos: "$videos" }, // Pass the videos array from the parent document
           localField: "videos",
           foreignField: "_id",
           as: "videos",
@@ -209,6 +232,15 @@ export const getPlaylistData = AsyncHandler(
             {
               $match: {
                 isPublic: true,
+              },
+            },
+
+            {
+              $addFields: {
+                // use videos array in local scope to assign index to each video doc
+                sortIndex: {
+                  $indexOfArray: ["$$parentVideos", "$_id"],
+                },
               },
             },
 
@@ -233,6 +265,18 @@ export const getPlaylistData = AsyncHandler(
             {
               $unwind: {
                 path: "$owner",
+              },
+            },
+
+            {
+              $sort: {
+                sortIndex: 1,
+              },
+            },
+
+            {
+              $project: {
+                sortIndex: 0,
               },
             },
           ],
@@ -392,6 +436,7 @@ export const updatePlaylist = AsyncHandler(
       {
         $lookup: {
           from: "videos",
+          let: { parentVideos: "$videos" }, // Pass the videos array from the parent document
           localField: "videos",
           foreignField: "_id",
           as: "videos",
@@ -399,6 +444,15 @@ export const updatePlaylist = AsyncHandler(
             {
               $match: {
                 isPublic: true,
+              },
+            },
+
+            {
+              $addFields: {
+                // use videos array in local scope to assign index to each video doc
+                sortIndex: {
+                  $indexOfArray: ["$$parentVideos", "$_id"],
+                },
               },
             },
 
@@ -423,6 +477,18 @@ export const updatePlaylist = AsyncHandler(
             {
               $unwind: {
                 path: "$owner",
+              },
+            },
+
+            {
+              $sort: {
+                sortIndex: 1,
+              },
+            },
+
+            {
+              $project: {
+                sortIndex: 0,
               },
             },
           ],
