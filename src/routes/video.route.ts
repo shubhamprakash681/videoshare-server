@@ -1,6 +1,7 @@
 import express from "express";
 import {
   getAllVideos,
+  getVideo,
   getVideoLikeData,
   incremenetVideoView,
   updateVideo,
@@ -13,6 +14,7 @@ import { uploadFileInServer } from "../middlewares/Multer.middleware";
 const videoRouter = express.Router();
 
 videoRouter.route("/").get(getAllVideos);
+videoRouter.route("/:videoId").get(getVideo);
 videoRouter.route("/likes/:videoId").get(isAuthenticatedUser, getVideoLikeData);
 videoRouter
   .route("/view/:videoId")

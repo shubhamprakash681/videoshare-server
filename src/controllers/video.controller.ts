@@ -120,6 +120,73 @@ export const getAllVideos = AsyncHandler(
   }
 );
 
+export const getVideo = AsyncHandler(
+  async (req: Request, res: Response, next: NextFunction) => {
+    const { videoId } = req.params as { videoId: string };
+
+    if (!isValidObjectId(videoId)) {
+      return next(new ErrorHandler("Invalid Video!", StatusCodes.BAD_REQUEST));
+    }
+
+    const videoAggregate = Video.aggregate([
+      {
+        $match: { _id: new mongoose.Types.ObjectId(videoId) },
+      },
+
+      {
+        $lookup: {
+          from: "users",
+          localField: "owner",
+          foreignField: "_id",
+          as: "owner",
+          pipeline: [
+            {
+              $project: {
+                fullname: 1,
+                username: 1,
+                avatar: "$avatar.url",
+              },
+            },
+          ],
+        },
+      },
+
+      {
+        $unwind: {
+          path: "$owner",
+        },
+      },
+    ]);
+
+    const videos = await Video.aggregatePaginate(videoAggregate);
+
+    if (videos.docs.length === 0) {
+      return next(new ErrorHandler("Video not found!", StatusCodes.NOT_FOUND));
+    }
+
+    if (videos.docs[0].isPublic === false) {
+      if (videos.docs[0].owner._id.toString() !== req.user?._id?.toString()) {
+        return next(
+          new ErrorHandler(
+            "You are not allowed to view this video",
+            StatusCodes.UNAUTHORIZED
+          )
+        );
+      }
+    }
+
+    res
+      .status(StatusCodes.OK)
+      .json(
+        new APIResponse(
+          StatusCodes.OK,
+          "Video fetched successfully",
+          videos.docs[0]
+        )
+      );
+  }
+);
+
 export const uploadVideo = AsyncHandler(
   async (req: Request, res: Response, next: NextFunction) => {
     const { title, description } = req.body as {
