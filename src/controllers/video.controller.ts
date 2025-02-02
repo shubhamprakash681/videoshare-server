@@ -1,4 +1,4 @@
-import { NextFunction, Request, Response } from "express";
+import { NextFunction, query, Request, Response } from "express";
 import Video, { IVideo } from "../models/Video.model";
 import AsyncHandler from "../utils/AsyncHandler";
 import mongoose, { isValidObjectId, PipelineStage } from "mongoose";
@@ -103,19 +103,175 @@ export const getAllVideos = AsyncHandler(
         },
       }
     );
+
+    // pagination & limit
+    pipeline.push(
+      { $skip: (Number(page) - 1) * Number(limit) },
+      { $limit: Number(limit) }
+    );
     // console.log(pipeline);
 
     const videoAggregate = Video.aggregate(pipeline);
 
-    const videos = await Video.aggregatePaginate(videoAggregate, {
-      page,
-      limit,
-    });
+    const countPipeline = videoAggregate
+      .pipeline()
+      .slice(
+        0,
+        videoAggregate
+          .pipeline()
+          .findIndex((p) => Object.keys(p)[0] === "$match") + 1
+      );
+    countPipeline.push({ $count: "totalCount" });
+
+    const countResult = await Video.aggregate(countPipeline);
+    const totalCount = countResult.length > 0 ? countResult[0].totalCount : 0;
+
+    const videos = await videoAggregate
+      .skip((+page - 1) * +limit)
+      .limit(+limit);
+
+    const result = {
+      docs: videos,
+      totalDocs: totalCount,
+      limit: limit,
+      page: page,
+      totalPages: Math.ceil(totalCount / limit),
+      pagingCounter: (page - 1) * limit + 1,
+      hasPrevPage: page > 1,
+      hasNextPage: page * limit < totalCount,
+      prevPage: page > 1 ? page - 1 : null,
+      nextPage: page * limit < totalCount ? page + 1 : null,
+    };
 
     res
       .status(StatusCodes.OK)
       .json(
-        new APIResponse(StatusCodes.OK, "Video fetched successfully", videos)
+        new APIResponse(StatusCodes.OK, "Video fetched successfully", result)
+      );
+  }
+);
+
+export const getSuggestions = AsyncHandler(
+  async (req: Request, res: Response, next: NextFunction) => {
+    const { videoId } = req.params as { videoId: string };
+    const { page = 1, limit = 10 } = req.query as unknown as {
+      page: number;
+      limit: number;
+    };
+
+    if (!isValidObjectId(videoId)) {
+      return next(new ErrorHandler("Invalid Video!", StatusCodes.BAD_REQUEST));
+    }
+
+    const targetVideo = await Video.findById(videoId);
+    if (!targetVideo) {
+      return res
+        .status(StatusCodes.NOT_FOUND)
+        .json({ message: "Video not found" });
+    }
+
+    const suggestionAggregate = Video.aggregate([
+      {
+        $search: {
+          index: "video-search-index",
+          compound: {
+            should: [
+              {
+                text: {
+                  query: targetVideo.title,
+                  path: "title",
+                  fuzzy: { maxEdits: 2 }, // Allows minor typos
+                },
+              },
+              {
+                text: {
+                  query: targetVideo.description,
+                  path: "description",
+                  fuzzy: { maxEdits: 2 },
+                },
+              },
+            ],
+            minimumShouldMatch: 1, // At least one condition should match
+          },
+        },
+      },
+      {
+        $match: {
+          _id: { $ne: targetVideo._id }, // Exclude original video
+          $or: [{ owner: targetVideo.owner }], // Include videos from the same owner
+          $and: [{ isPublic: true }], // include public videos only
+        },
+      },
+
+      // Sort by popularity & recency
+      { $sort: { views: -1, createdAt: -1 } },
+
+      // Stage for populating owner's data
+      {
+        $lookup: {
+          from: "users",
+          localField: "owner",
+          foreignField: "_id",
+          as: "owner",
+          pipeline: [
+            {
+              $project: {
+                fullname: 1,
+                username: 1,
+                avatar: "$avatar.url",
+              },
+            },
+          ],
+        },
+      },
+      {
+        $unwind: {
+          path: "$owner",
+        },
+      },
+
+      { $skip: (Number(page) - 1) * Number(limit) }, // Pagination: Skip before limit
+      { $limit: Number(limit) }, // Pagination: Limit the results
+    ]);
+
+    const countPipeline = suggestionAggregate
+      .pipeline()
+      .slice(
+        0,
+        suggestionAggregate
+          .pipeline()
+          .findIndex((p) => Object.keys(p)[0] === "$match") + 1
+      );
+    countPipeline.push({ $count: "totalCount" });
+
+    const countResult = await Video.aggregate(countPipeline);
+    const totalCount = countResult.length > 0 ? countResult[0].totalCount : 0;
+
+    const videos = await suggestionAggregate
+      .skip((+page - 1) * +limit)
+      .limit(+limit);
+
+    const result = {
+      docs: videos,
+      totalDocs: totalCount,
+      limit: limit,
+      page: page,
+      totalPages: Math.ceil(totalCount / limit),
+      pagingCounter: (page - 1) * limit + 1,
+      hasPrevPage: page > 1,
+      hasNextPage: page * limit < totalCount,
+      prevPage: page > 1 ? page - 1 : null,
+      nextPage: page * limit < totalCount ? page + 1 : null,
+    };
+
+    res
+      .status(StatusCodes.OK)
+      .json(
+        new APIResponse(
+          StatusCodes.OK,
+          "Suggestions fetched successfully",
+          result
+        )
       );
   }
 );

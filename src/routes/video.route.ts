@@ -1,6 +1,7 @@
 import express from "express";
 import {
   getAllVideos,
+  getSuggestions,
   getVideo,
   getVideoLikeData,
   incremenetVideoView,
@@ -15,6 +16,7 @@ const videoRouter = express.Router();
 
 videoRouter.route("/").get(getAllVideos);
 videoRouter.route("/:videoId").get(getVideo);
+videoRouter.route("/suggestions/:videoId").get(getSuggestions);
 videoRouter.route("/likes/:videoId").get(isAuthenticatedUser, getVideoLikeData);
 videoRouter
   .route("/view/:videoId")
