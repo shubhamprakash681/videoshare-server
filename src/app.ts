@@ -40,6 +40,7 @@ import {
   subscriptionRouter,
   tweetRouter,
   playlistRouter,
+  searchRouter,
 } from "./routes";
 
 // routes use
@@ -52,6 +53,7 @@ app.use("/api/v1/video", videoRouter);
 app.use("/api/v1/comment", commentRouter);
 app.use("/api/v1/tweet", tweetRouter);
 app.use("/api/v1/playlist", playlistRouter);
+app.use("/api/v1/search", searchRouter);
 
 // handling unknown routes
 app.all("*", (req, res, next) => {

@@ -8,6 +8,7 @@ import ErrorHandler from "../utils/ErrorHandler";
 import { deleteCloudinaryFile, uploadOnCloudinary } from "../utils/cloudinary";
 import User from "../models/User.model";
 import Playlist from "../models/Playlist.model";
+import { updateSearchDb } from "./search.controller";
 
 type getAllVideosQuery = {
   page: number;
@@ -31,13 +32,14 @@ export const getAllVideos = AsyncHandler(
 
     const pipeline: PipelineStage[] = [];
 
-    if (query) {
+    if (query.trim().length) {
       pipeline.push({
         $search: {
-          index: "video-search-index",
+          index: "auto-text-search-index",
           text: {
             query,
             path: ["title", "description"],
+            matchCriteria: "any",
             fuzzy: {
               maxEdits: 2,
               prefixLength: 0,
@@ -46,6 +48,8 @@ export const getAllVideos = AsyncHandler(
           },
         },
       });
+
+      await updateSearchDb(query, next);
     }
 
     // pipeline for fetching public videos only
@@ -271,6 +275,98 @@ export const getSuggestions = AsyncHandler(
           StatusCodes.OK,
           "Suggestions fetched successfully",
           result
+        )
+      );
+  }
+);
+
+export const getSearchSuggestion = AsyncHandler(
+  async (req: Request, res: Response, next: NextFunction) => {
+    const { query } = req.query as { query: string };
+
+    if (!query || query.trim().length < 2) {
+      return res
+        .status(StatusCodes.OK)
+        .json(
+          new APIResponse(
+            StatusCodes.OK,
+            "Search Suggestions fetched successfully",
+            []
+          )
+        );
+    }
+
+    const searchSuggestionAggregate = Video.aggregate([
+      {
+        $search: {
+          index: "auto-text-search-index",
+          compound: {
+            should: [
+              {
+                autocomplete: {
+                  query,
+                  path: "title",
+                  // tokenOrder: "sequential",
+                  fuzzy: {
+                    maxEdits: 2,
+                    prefixLength: 0,
+                    maxExpansions: 50,
+                  },
+                },
+              },
+              {
+                autocomplete: {
+                  query,
+                  path: "description",
+                  // tokenOrder: "sequential",
+                  fuzzy: {
+                    maxEdits: 2,
+                    prefixLength: 0,
+                    maxExpansions: 50,
+                  },
+                },
+              },
+            ],
+
+            minimumShouldMatch: 1,
+          },
+
+          highlight: {
+            path: ["title", "description"],
+          },
+        },
+      },
+      {
+        $match: { isPublic: true },
+      },
+      {
+        $limit: 20,
+      },
+      {
+        $project: {
+          _id: 0,
+          title: 1,
+          description: 1,
+          score: { $meta: "searchScore" },
+          highlights: { $meta: "searchHighlights" },
+        },
+      },
+      {
+        $sort: {
+          score: -1,
+        },
+      },
+    ]);
+
+    const searchSuggestions = await searchSuggestionAggregate;
+
+    res
+      .status(StatusCodes.OK)
+      .json(
+        new APIResponse(
+          StatusCodes.OK,
+          "Search Suggestions fetched successfully",
+          searchSuggestions
         )
       );
   }

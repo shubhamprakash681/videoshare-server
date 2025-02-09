@@ -7,6 +7,7 @@ import likeRouter from "./like.route";
 import subscriptionRouter from "./subscription.route";
 import tweetRouter from "./tweet.route";
 import playlistRouter from "./playlist.route";
+import searchRouter from "./search.route";
 
 export {
   commentRouter,
@@ -18,4 +19,5 @@ export {
   userRouter,
   videoRouter,
   playlistRouter,
+  searchRouter,
 };
