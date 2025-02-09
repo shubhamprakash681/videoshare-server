@@ -40,3 +40,12 @@ Definitions of Atlas indices used:
     }
   }
 }
+
+Vercel Deployment process
+Add vercel.json file
+npm run build
+npm install -g vercel
+vercel
+vercel --prod
+Link Git repo from Vercel UI
+Add env from Vercel UI
