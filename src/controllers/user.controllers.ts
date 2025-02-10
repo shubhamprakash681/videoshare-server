@@ -31,7 +31,7 @@ const getAccessTokenCookieOptions: () => CookieOptions = () => {
     path: "/",
     httpOnly: true,
     secure: true,
-    // sameSite: "lax", // enable only if API and UI are deployed under same domain
+    sameSite: "none", // lax- if API and UI are deployed under same domain, strict- if both are on same server
     maxAge: Number(process.env.ACCESS_COOKIE_EXPIRE) * 24 * 60 * 60 * 1000 || 0,
   };
 };
@@ -40,7 +40,7 @@ const getRefreshTokenCookieOptions: () => CookieOptions = () => {
     path: "/",
     httpOnly: true,
     secure: true,
-    // sameSite: "lax", // enable only if API and UI are deployed under same domain
+    sameSite: "none", // lax- if API and UI are deployed under same domain, strict- if both are on same server
     maxAge:
       Number(process.env.REFRESH_COOKIE_EXPIRE) * 24 * 60 * 60 * 1000 || 0,
   };
