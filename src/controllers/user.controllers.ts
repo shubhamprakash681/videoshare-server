@@ -26,9 +26,24 @@ interface ILoginUserBody {
   password: string;
 }
 
-const cookieOptions: CookieOptions = {
-  httpOnly: true,
-  secure: true,
+const getAccessTokenCookieOptions: () => CookieOptions = () => {
+  return {
+    path: "/",
+    httpOnly: true,
+    secure: true,
+    sameSite: "lax",
+    maxAge: Number(process.env.ACCESS_COOKIE_EXPIRE) * 24 * 60 * 60 * 1000 || 0,
+  };
+};
+const getRefreshTokenCookieOptions: () => CookieOptions = () => {
+  return {
+    path: "/",
+    httpOnly: true,
+    secure: true,
+    sameSite: "lax",
+    maxAge:
+      Number(process.env.REFRESH_COOKIE_EXPIRE) * 24 * 60 * 60 * 1000 || 0,
+  };
 };
 
 const generateAccessAndRefreshTokenToken = async (
@@ -235,8 +250,8 @@ export const loginUser = AsyncHandler(
 
     res
       .status(StatusCodes.OK)
-      .cookie("accessToken", accessToken, cookieOptions)
-      .cookie("refreshToken", refreshToken, cookieOptions)
+      .cookie("accessToken", accessToken, getAccessTokenCookieOptions())
+      .cookie("refreshToken", refreshToken, getRefreshTokenCookieOptions())
       .json(
         new APIResponse(StatusCodes.OK, `Welcome back ${user.fullname}!`, {
           user,
@@ -525,8 +540,8 @@ export const refreshSession = AsyncHandler(
 
     res
       .status(StatusCodes.OK)
-      .cookie("accessToken", accessToken, cookieOptions)
-      .cookie("refreshToken", refreshToken, cookieOptions)
+      .cookie("accessToken", accessToken, getAccessTokenCookieOptions())
+      .cookie("refreshToken", refreshToken, getRefreshTokenCookieOptions())
       .json(
         new APIResponse(StatusCodes.OK, `Welcome back ${user.fullname}!`, {
           user,
@@ -553,8 +568,8 @@ export const logoutUser = AsyncHandler(
 
     res
       .status(StatusCodes.OK)
-      .clearCookie("accessToken", cookieOptions)
-      .clearCookie("refreshToken", cookieOptions)
+      .clearCookie("accessToken", getAccessTokenCookieOptions())
+      .clearCookie("refreshToken", getRefreshTokenCookieOptions())
       .json(new APIResponse(StatusCodes.OK, "Logged out successfully"));
   }
 );
