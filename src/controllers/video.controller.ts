@@ -32,7 +32,7 @@ export const getAllVideos = AsyncHandler(
 
     const pipeline: PipelineStage[] = [];
 
-    if (query.trim().length) {
+    if (query && query.trim().length) {
       pipeline.push({
         $search: {
           index: "auto-text-search-index",
@@ -177,21 +177,33 @@ export const getSuggestions = AsyncHandler(
     const suggestionAggregate = Video.aggregate([
       {
         $search: {
-          index: "video-search-index",
+          index: "auto-text-search-index",
           compound: {
             should: [
               {
                 text: {
                   query: targetVideo.title,
                   path: "title",
-                  fuzzy: { maxEdits: 2 }, // Allows minor typos
+                  matchCriteria: "any",
+                  // Allows minor typos
+                  fuzzy: {
+                    maxEdits: 2,
+                    prefixLength: 0,
+                    maxExpansions: 50,
+                  },
                 },
               },
               {
                 text: {
                   query: targetVideo.description,
                   path: "description",
-                  fuzzy: { maxEdits: 2 },
+                  matchCriteria: "any",
+                  // Allows minor typos
+                  fuzzy: {
+                    maxEdits: 2,
+                    prefixLength: 0,
+                    maxExpansions: 50,
+                  },
                 },
               },
             ],
