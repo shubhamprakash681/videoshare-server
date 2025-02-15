@@ -568,8 +568,8 @@ export const logoutUser = AsyncHandler(
 
     res
       .status(StatusCodes.OK)
-      .clearCookie("accessToken", getAccessTokenCookieOptions())
-      .clearCookie("refreshToken", getRefreshTokenCookieOptions())
+      .cookie("accessToken", null, getAccessTokenCookieOptions())
+      .cookie("refreshToken", null, getRefreshTokenCookieOptions())
       .json(new APIResponse(StatusCodes.OK, "Logged out successfully"));
   }
 );
