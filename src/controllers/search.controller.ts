@@ -8,14 +8,16 @@ export const getTopSearches = AsyncHandler(
   async (req: Request, res: Response, next: NextFunction) => {
     const { limit } = req.query as unknown as { limit: number };
 
-    const topSearches = await Search.find().limit(+limit);
+    const topSearches = await Search.find()
+      .sort({ count: "desc", searchText: "asc" })
+      .limit(+limit);
 
     res
       .status(StatusCodes.OK)
       .json(
         new APIResponse(
           StatusCodes.OK,
-          "Top Searhes fetched successfully",
+          "Top Searches fetched successfully",
           topSearches
         )
       );
