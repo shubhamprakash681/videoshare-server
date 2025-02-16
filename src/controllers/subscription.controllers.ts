@@ -100,7 +100,7 @@ export const getSubscribedChannels = AsyncHandler(
         $project: {
           "channel.refreshToken": 0,
           "channel.password": 0,
-          "channel.enail": 0,
+          "channel.email": 0,
           "channel.watchHistory": 0,
           "channel.avatar.public_id": 0,
           "channel.coverImage": 0,
