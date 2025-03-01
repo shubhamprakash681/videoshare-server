@@ -319,6 +319,15 @@ export const getLikedVideos = AsyncHandler(
                 localField: "owner",
                 foreignField: "_id",
                 as: "owner",
+                pipeline: [
+                  {
+                    $project: {
+                      fullname: 1,
+                      username: 1,
+                      avatar: "$avatar.url",
+                    },
+                  },
+                ],
               },
             },
             {
