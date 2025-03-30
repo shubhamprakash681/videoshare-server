@@ -2,6 +2,7 @@ import express from "express";
 import { uploadFileInServer } from "../middlewares/Multer.middleware";
 import {
   deleteCoverImage,
+  forgotPassword,
   getUserChannelProfile,
   getUserProfile,
   getWatchHistory,
@@ -9,6 +10,7 @@ import {
   logoutUser,
   refreshSession,
   registerUser,
+  resetPassword,
   updatePassword,
   updateProfile,
   updateUserAvatar,
@@ -56,6 +58,8 @@ userRouter
   .route("/channel/:username")
   .get(isAuthenticatedUser, getUserChannelProfile);
 userRouter.route("/watch-history").get(isAuthenticatedUser, getWatchHistory);
+userRouter.route("/password/forgot").get(forgotPassword);
+userRouter.route("/password/reset/:token").patch(resetPassword);
 userRouter.route("/password/update").patch(isAuthenticatedUser, updatePassword);
 userRouter.route("/logout").get(isAuthenticatedUser, logoutUser);
 

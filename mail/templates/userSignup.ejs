@@ -1,0 +1,348 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Welcome to VideoShare</title>
+  </head>
+  <body
+    style="
+      margin: 0;
+      padding: 0;
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI',
+        Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+      line-height: 1.5;
+      color: #1e293b;
+      background-color: #f8fafc;
+    "
+  >
+    <!-- Main container table -->
+    <table
+      width="100%"
+      cellpadding="0"
+      cellspacing="0"
+      border="0"
+      style="max-width: 680px; min-width: 320px; margin: 0 auto"
+    >
+      <tr>
+        <td style="padding: 20px 0">
+          <!-- Email content table -->
+          <table
+            width="100%"
+            cellpadding="0"
+            cellspacing="0"
+            border="0"
+            style="
+              background-color: #ffffff;
+              border-radius: 12px;
+              overflow: hidden;
+              box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            "
+          >
+            <!-- Header -->
+            <tr>
+              <td
+                style="
+                  background: linear-gradient(135deg, #e21c4b 0%, #da3e62 100%);
+                  padding: 30px 20px;
+                  text-align: center;
+                  color: white;
+                "
+              >
+                <div
+                  style="
+                    font-size: 24px;
+                    font-weight: 700;
+                    letter-spacing: -0.5px;
+                    margin-bottom: 8px;
+                  "
+                >
+                  VideoShare
+                </div>
+                <div style="font-size: 14px; opacity: 0.9; font-weight: 400">
+                  Your favorite video sharing platform
+                </div>
+              </td>
+            </tr>
+
+            <!-- Content -->
+            <tr>
+              <td style="padding: 30px">
+                <h1
+                  style="
+                    color: #1e293b;
+                    font-size: 20px;
+                    font-weight: 600;
+                    margin-top: 0;
+                  "
+                >
+                  Welcome to VideoShare,
+                  <span style="font-weight: 600; color: #1e293b"
+                    ><%= firstName %></span
+                  >!
+                </h1>
+                <p style="margin-bottom: 20px; font-size: 15px; color: #475569">
+                  We're thrilled to have you join our community of creators and
+                  viewers. Your account has been successfully created and is
+                  ready to use.
+                </p>
+
+                <!-- Getting Started Section -->
+                <table
+                  width="100%"
+                  cellpadding="0"
+                  cellspacing="0"
+                  border="0"
+                  style="margin-bottom: 20px"
+                >
+                  <tr>
+                    <td
+                      style="
+                        padding: 15px;
+                        background-color: #f8fafc;
+                        border-radius: 8px;
+                      "
+                    >
+                      <h2
+                        style="
+                          color: #1e293b;
+                          font-size: 16px;
+                          font-weight: 600;
+                          margin-top: 0;
+                          margin-bottom: 15px;
+                        "
+                      >
+                        Get started:
+                      </h2>
+                      <table
+                        width="100%"
+                        cellpadding="0"
+                        cellspacing="0"
+                        border="0"
+                      >
+                        <tr>
+                          <td
+                            style="
+                              padding-bottom: 10px;
+                              vertical-align: top;
+                              width: 30px;
+                            "
+                          >
+                            <span
+                              style="
+                                display: inline-block;
+                                width: 24px;
+                                height: 24px;
+                                background-color: #e21c4b;
+                                color: white;
+                                border-radius: 50%;
+                                text-align: center;
+                                line-height: 24px;
+                                font-weight: bold;
+                              "
+                              >1</span
+                            >
+                          </td>
+                          <td style="padding-bottom: 10px">
+                            <p
+                              style="margin: 0; font-size: 15px; color: #475569"
+                            >
+                              Complete your profile to help others discover you
+                            </p>
+                          </td>
+                        </tr>
+                        <tr>
+                          <td style="padding-bottom: 10px; vertical-align: top">
+                            <span
+                              style="
+                                display: inline-block;
+                                width: 24px;
+                                height: 24px;
+                                background-color: #e21c4b;
+                                color: white;
+                                border-radius: 50%;
+                                text-align: center;
+                                line-height: 24px;
+                                font-weight: bold;
+                              "
+                              >2</span
+                            >
+                          </td>
+                          <td style="padding-bottom: 10px">
+                            <p
+                              style="margin: 0; font-size: 15px; color: #475569"
+                            >
+                              Upload your first video and share your story
+                            </p>
+                          </td>
+                        </tr>
+                        <tr>
+                          <td style="vertical-align: top">
+                            <span
+                              style="
+                                display: inline-block;
+                                width: 24px;
+                                height: 24px;
+                                background-color: #e21c4b;
+                                color: white;
+                                border-radius: 50%;
+                                text-align: center;
+                                line-height: 24px;
+                                font-weight: bold;
+                              "
+                              >3</span
+                            >
+                          </td>
+                          <td>
+                            <p
+                              style="margin: 0; font-size: 15px; color: #475569"
+                            >
+                              Explore videos from our community
+                            </p>
+                          </td>
+                        </tr>
+                      </table>
+                    </td>
+                  </tr>
+                </table>
+
+                <!-- Button -->
+                <table
+                  width="100%"
+                  cellpadding="0"
+                  cellspacing="0"
+                  border="0"
+                  style="margin: 30px 0; text-align: center"
+                >
+                  <tr>
+                    <td>
+                      <a
+                        href="<%= clientBaseUrl %>/dashboard"
+                        style="
+                          display: inline-block;
+                          padding: 12px 28px;
+                          background: linear-gradient(
+                            135deg,
+                            #e21c4b 0%,
+                            #da3e62 100%
+                          );
+                          color: white !important;
+                          text-decoration: none;
+                          border-radius: 8px;
+                          font-weight: 500;
+                          font-size: 15px;
+                          box-shadow: 0 2px 4px rgba(99, 102, 241, 0.2);
+                        "
+                        >Go to Your Dashboard</a
+                      >
+                    </td>
+                  </tr>
+                </table>
+
+                <p style="margin-bottom: 20px; font-size: 15px; color: #475569">
+                  If you have any questions or need help getting started, don't
+                  hesitate to
+                  <a
+                    href="mailto:shubhamprakash681@gmail.com"
+                    style="color: #e21c4b; text-decoration: none"
+                    >contact our support team</a
+                  >.
+                </p>
+
+                <!-- Divider -->
+                <table
+                  width="100%"
+                  cellpadding="0"
+                  cellspacing="0"
+                  border="0"
+                  style="margin: 25px 0"
+                >
+                  <tr>
+                    <td style="height: 1px; background-color: #e2e8f0"></td>
+                  </tr>
+                </table>
+
+                <p style="margin-bottom: 20px; font-size: 14px; color: #64748b">
+                  Your username:
+                  <strong style="color: #1e293b"><%= username %></strong>
+                </p>
+              </td>
+            </tr>
+
+            <!-- Footer -->
+            <tr>
+              <td
+                style="
+                  padding: 20px 30px;
+                  background-color: #f1f5f9;
+                  font-size: 13px;
+                  color: #64748b;
+                  text-align: center;
+                  border-radius: 0 0 12px 12px;
+                "
+              >
+                <p style="margin: 0 0 15px 0">
+                  VideoShare is a personal portfolio project showcasing a modern
+                  video-sharing platform powered by
+                  <a
+                    href="https://cloudinary.com"
+                    style="color: #e21c4b; text-decoration: none"
+                    target="_blank"
+                    >Cloudinary</a
+                  >. Explore, create, and share your stories with the world.
+                </p>
+                <p style="margin: 0 0 15px 0">
+                  <a
+                    href="<%= clientBaseUrl %>"
+                    style="color: #e21c4b; text-decoration: none"
+                    target="_blank"
+                    >Home</a
+                  >
+                  &nbsp;&bull;&nbsp;
+                  <a
+                    href="<%= clientBaseUrl %>/about"
+                    style="color: #e21c4b; text-decoration: none"
+                    target="_blank"
+                    >About</a
+                  >
+                  &nbsp;&bull;&nbsp;
+                  <a
+                    href="<%= clientBaseUrl %>/terms"
+                    style="color: #e21c4b; text-decoration: none"
+                    target="_blank"
+                    >Terms of Service</a
+                  >
+                  &nbsp;&bull;&nbsp;
+                  <a
+                    href="<%= clientBaseUrl %>/privacy"
+                    style="color: #e21c4b; text-decoration: none"
+                    target="_blank"
+                    >Privacy</a
+                  >
+                </p>
+
+                <!-- Divider -->
+                <table
+                  width="100%"
+                  cellpadding="0"
+                  cellspacing="0"
+                  border="0"
+                  style="margin: 15px 0"
+                >
+                  <tr>
+                    <td style="height: 1px; background-color: #e2e8f0"></td>
+                  </tr>
+                </table>
+
+                <p style="margin: 0 0 10px 0">
+                  © <%= new Date().getFullYear() %> VideoShare. A personal
+                  portfolio project. All rights reserved.
+                </p>
+              </td>
+            </tr>
+          </table>
+        </td>
+      </tr>
+    </table>
+  </body>
+</html>

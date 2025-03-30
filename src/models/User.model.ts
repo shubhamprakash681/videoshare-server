@@ -1,6 +1,7 @@
 import { Document, Model, Schema } from "mongoose";
 import jwt from "jsonwebtoken";
 import bcrypt from "bcrypt";
+import crypto from "crypto";
 import aggregatePaginate from "mongoose-aggregate-paginate-v2";
 import { model } from "mongoose";
 
@@ -20,11 +21,14 @@ export interface IUser extends Document {
   watchHistory: WatchHistory[];
   password: string;
   refreshToken: string;
+  resetPswdToken?: string;
+  resetPswdExpire?: Date;
   channelDescription?: string;
 
   comparePassword: (enteredPassword: string) => Promise<boolean>;
   generateAccessToken: () => string;
   generateRefreshToken: () => string;
+  generatePasswordResetToken: () => string;
 }
 
 // Extend Mongoose Model for custom static methods
@@ -101,6 +105,12 @@ const userSchema: Schema<IUser> = new Schema(
     refreshToken: {
       type: String,
     },
+    resetPswdToken: {
+      type: String,
+    },
+    resetPswdExpire: {
+      type: Date,
+    },
   },
   { timestamps: true }
 );
@@ -153,6 +163,20 @@ userSchema.methods.generateRefreshToken = function () {
       expiresIn: process.env.REFRESH_TOKEN_EXPIRY,
     }
   );
+};
+
+userSchema.methods.generatePasswordResetToken = function () {
+  // Generate a random token
+  const resetToken = crypto.randomBytes(32).toString("hex");
+
+  // Hash the token and set it to the resetPswdToken field
+  this.resetPswdToken = crypto
+    .createHash("sha256")
+    .update(resetToken)
+    .digest("hex");
+  this.resetPswdExpire = new Date(Date.now() + 15 * 60 * 1000); //15 min
+
+  return resetToken;
 };
 
 // Add Aggregate Pagination Plugin

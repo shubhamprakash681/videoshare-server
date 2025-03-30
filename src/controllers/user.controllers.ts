@@ -1,3 +1,4 @@
+import crypto from "crypto";
 import { CookieOptions, NextFunction, Request, Response } from "express";
 import AsyncHandler from "../utils/AsyncHandler";
 import ErrorHandler from "../utils/ErrorHandler";
@@ -5,14 +6,18 @@ import { StatusCodes } from "http-status-codes";
 import {
   loginUserValidator,
   registerUserValidator,
+  resetPasswordValidator,
   updatePasswordValidator,
   updateProfileValidator,
 } from "../schema/user";
+import fs from "fs";
+import ejs from "ejs";
 import User, { IUser } from "../models/User.model";
 import { deleteCloudinaryFile, uploadOnCloudinary } from "../utils/cloudinary";
 import APIResponse from "../utils/APIResponse";
 import mongoose, { Document } from "mongoose";
 import jwt from "jsonwebtoken";
+import { sendEmail } from "../utils/nodemailer";
 
 interface IRegisterUserBody {
   username: string;
@@ -188,6 +193,25 @@ export const registerUser = AsyncHandler(
       );
     }
 
+    // registration mail
+    const clientBaseUrl = process.env.CLIENT_BASE_URI;
+
+    const templateString = fs.readFileSync(
+      "./mail/templates/userSignup.ejs",
+      "utf-8"
+    );
+    const htmlContent = ejs.render(templateString, {
+      username: userData.username,
+      firstName: userData.fullname.split(" ")[0],
+      clientBaseUrl,
+    });
+
+    await sendEmail({
+      subject: "Welcome to VideoShare",
+      to: user.email,
+      html: htmlContent,
+    });
+
     return res.status(StatusCodes.CREATED).json(
       new APIResponse(StatusCodes.CREATED, "User Registered Successfully!", {
         user: userData,
@@ -258,6 +282,136 @@ export const loginUser = AsyncHandler(
           accessToken,
           refreshToken,
         })
+      );
+  }
+);
+
+export const forgotPassword = AsyncHandler(
+  async (req: Request, res: Response, next: NextFunction) => {
+    const { identifier } = req.body as { identifier: string };
+
+    if (!identifier) {
+      return next(
+        new ErrorHandler("Identifier is required!", StatusCodes.BAD_REQUEST)
+      );
+    }
+
+    const user = await User.findOne({
+      $or: [{ email: identifier }, { username: identifier }],
+    });
+
+    if (!user) {
+      return next(
+        new ErrorHandler("Account not exists!", StatusCodes.NOT_FOUND)
+      );
+    }
+
+    // generating password reset token
+    const pswdResetToken = user.generatePasswordResetToken();
+
+    // saving to db
+    await user.save({ validateBeforeSave: false });
+
+    try {
+      const clientBaseUrl = process.env.CLIENT_BASE_URI;
+
+      const templateString = fs.readFileSync(
+        "./mail/templates/passwordRecovery.ejs",
+        "utf-8"
+      );
+      const htmlContent = ejs.render(templateString, {
+        firstName: user.fullname.split(" ")[0],
+        clientBaseUrl,
+        resetPasswordUrl: `${clientBaseUrl}/password/reset?token=${pswdResetToken}`,
+      });
+
+      await sendEmail({
+        subject: "VideoShare - Password Reset Link",
+        to: user.email,
+        html: htmlContent,
+      });
+
+      res
+        .status(StatusCodes.OK)
+        .json(
+          new APIResponse(
+            StatusCodes.OK,
+            "Password Reset Link sent to your email"
+          )
+        );
+    } catch (error) {
+      // deleting resetPswdToken
+      user.resetPswdToken = undefined;
+      user.resetPswdExpire = undefined;
+
+      // saving user to db
+      await user.save({ validateBeforeSave: false });
+
+      return next(
+        new ErrorHandler(
+          "Failed to generate Password Reset Link. Please try after some time.",
+          StatusCodes.INTERNAL_SERVER_ERROR
+        )
+      );
+    }
+  }
+);
+
+export const resetPassword = AsyncHandler(
+  async (req: Request, res: Response, next: NextFunction) => {
+    const { token } = req.params as { token: string };
+    const { password } = req.body as { password: string };
+
+    const validationRes = resetPasswordValidator.safeParse({ password, token });
+
+    if (!validationRes.success) {
+      const validationErrors = validationRes.error.errors.map(
+        (err) => err.message
+      );
+
+      return next(
+        new ErrorHandler(
+          validationErrors.length
+            ? validationErrors.join(", ")
+            : "Invalid reset password parameters",
+          StatusCodes.BAD_REQUEST
+        )
+      );
+    }
+
+    const resetPswdToken = crypto
+      .createHash("sha256")
+      .update(token)
+      .digest("hex");
+
+    const user = await User.findOne({
+      resetPswdToken,
+      resetPswdExpire: { $gt: new Date(Date.now()) },
+    });
+
+    if (!user) {
+      return next(
+        new ErrorHandler(
+          "Reset password token is either invalid or has been expired",
+          StatusCodes.BAD_REQUEST
+        )
+      );
+    }
+
+    user.password = password;
+
+    user.resetPswdToken = undefined;
+    user.resetPswdExpire = undefined;
+
+    await user.save({ validateBeforeSave: false });
+
+    res
+      .status(StatusCodes.OK)
+      .json(
+        new APIResponse(
+          StatusCodes.OK,
+          "Password updated! Please Login to continue"
+        )
       );
   }
 );
