@@ -288,7 +288,7 @@ export const loginUser = AsyncHandler(
 
 export const forgotPassword = AsyncHandler(
   async (req: Request, res: Response, next: NextFunction) => {
-    const { identifier } = req.body as { identifier: string };
+    const { identifier } = req.query as { identifier: string };
 
     if (!identifier) {
       return next(
