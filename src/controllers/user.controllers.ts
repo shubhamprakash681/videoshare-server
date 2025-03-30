@@ -407,12 +407,7 @@ export const resetPassword = AsyncHandler(
 
     res
       .status(StatusCodes.OK)
-      .json(
-        new APIResponse(
-          StatusCodes.OK,
-          "Password updated! Please Login to continue"
-        )
-      );
+      .json(new APIResponse(StatusCodes.OK, "Password updated!"));
   }
 );
 
