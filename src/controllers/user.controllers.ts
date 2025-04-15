@@ -837,10 +837,11 @@ export const getWatchHistory = AsyncHandler(
       {
         $lookup: {
           from: "videos",
-          localField: "watchHistory",
+          localField: "watchHistory.videoId",
           foreignField: "_id",
           as: "watchHistory",
           pipeline: [
+            { $match: { isNSFW: false } },
             {
               $lookup: {
                 from: "users",

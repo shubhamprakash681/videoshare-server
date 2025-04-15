@@ -52,9 +52,9 @@ export const getAllVideos = AsyncHandler(
       await updateSearchDb(query, next);
     }
 
-    // pipeline for fetching public videos only
+    // pipeline for fetching public & Safe videos only
     pipeline.push({
-      $match: { isPublic: true },
+      $match: { $and: [{ isPublic: true }, { isNSFW: false }] },
     });
 
     // send userId with req.query if want to get videos of specific user only
@@ -215,7 +215,7 @@ export const getSuggestions = AsyncHandler(
         $match: {
           _id: { $ne: targetVideo._id }, // Exclude original video
           $or: [{ owner: targetVideo.owner }], // Include videos from the same owner
-          $and: [{ isPublic: true }], // include public videos only
+          $and: [{ isPublic: true }, { isNSFW: false }], // include public & safe videos only
         },
       },
 
@@ -349,7 +349,7 @@ export const getSearchSuggestion = AsyncHandler(
         },
       },
       {
-        $match: { isPublic: true },
+        $match: { $and: [{ isPublic: true }, { isNSFW: false }] },
       },
       {
         $limit: 20,
@@ -394,7 +394,12 @@ export const getVideo = AsyncHandler(
 
     const videoAggregate = Video.aggregate([
       {
-        $match: { _id: new mongoose.Types.ObjectId(videoId) },
+        $match: {
+          $and: [
+            { _id: new mongoose.Types.ObjectId(videoId) },
+            { isNSFW: false },
+          ],
+        },
       },
 
       {
@@ -632,7 +637,13 @@ export const getVideoLikeData = AsyncHandler(
 
     const videoLikeAggregate = Video.aggregate([
       {
-        $match: { isPublic: true, _id: new mongoose.Types.ObjectId(videoId) },
+        $match: {
+          $and: [
+            { _id: new mongoose.Types.ObjectId(videoId) },
+            { isPublic: true },
+            { isNSFW: false },
+          ],
+        },
       },
 
       {

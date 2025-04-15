@@ -17,7 +17,10 @@ export const getChannelStats = AsyncHandler(
       // statge 1- filter videos based on user id
       {
         $match: {
-          owner: new mongoose.Types.ObjectId(userId as string),
+          $and: [
+            { owner: new mongoose.Types.ObjectId(userId as string) },
+            { isNSFW: false },
+          ],
         },
       },
 
@@ -93,7 +96,10 @@ export const getChannelVideos = AsyncHandler(
       // stage 1 - filter all videos uploaded by current user
       {
         $match: {
-          owner: new mongoose.Types.ObjectId(req.user?._id as string),
+          $and: [
+            { owner: new mongoose.Types.ObjectId(req.user?._id as string) },
+            { isNSFW: false },
+          ],
         },
       },
 

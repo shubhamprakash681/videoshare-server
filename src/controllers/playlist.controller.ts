@@ -111,7 +111,7 @@ export const getPlaylists = AsyncHandler(
           pipeline: [
             {
               $match: {
-                isPublic: true,
+                $and: [{ isPublic: true }, { isNSFW: false }],
               },
             },
 
@@ -231,7 +231,7 @@ export const getPlaylistData = AsyncHandler(
           pipeline: [
             {
               $match: {
-                isPublic: true,
+                $and: [{ isPublic: true }, { isNSFW: false }],
               },
             },
 
@@ -443,7 +443,7 @@ export const updatePlaylist = AsyncHandler(
           pipeline: [
             {
               $match: {
-                isPublic: true,
+                $and: [{ isPublic: true }, { isNSFW: false }],
               },
             },
 

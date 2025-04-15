@@ -76,7 +76,7 @@ export const getSubscribedChannels = AsyncHandler(
                 pipeline: [
                   {
                     $match: {
-                      isPublic: true,
+                      $and: [{ isPublic: true }, { isNSFW: false }],
                     },
                   },
                   {

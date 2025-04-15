@@ -314,6 +314,11 @@ export const getLikedVideos = AsyncHandler(
           // pipeline for populating owner's data of videos
           pipeline: [
             {
+              $match: {
+                $and: [{ isPublic: true }, { isNSFW: false }],
+              },
+            },
+            {
               $lookup: {
                 from: "users",
                 localField: "owner",

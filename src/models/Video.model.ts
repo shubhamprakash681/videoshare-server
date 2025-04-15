@@ -16,6 +16,9 @@ export interface IVideo extends Document {
   views: number;
   isPublic: boolean;
   owner: Schema.Types.ObjectId;
+
+  isNSFW: boolean;
+  isScannedForNSFW: boolean;
 }
 
 interface IVideoModel extends Model<IVideo> {
@@ -74,6 +77,15 @@ const videoSchema: Schema<IVideo> = new Schema(
     owner: {
       type: Schema.Types.ObjectId,
       ref: "User",
+    },
+
+    isNSFW: {
+      type: Boolean,
+      default: false,
+    },
+    isScannedForNSFW: {
+      type: Boolean,
+      default: false,
     },
   },
   { timestamps: true }
