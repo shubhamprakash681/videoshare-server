@@ -24,6 +24,7 @@ export interface IUser extends Document {
   resetPswdToken?: string;
   resetPswdExpire?: Date;
   channelDescription?: string;
+  uploadTCAccepted: boolean;
 
   comparePassword: (enteredPassword: string) => Promise<boolean>;
   generateAccessToken: () => string;
@@ -110,6 +111,10 @@ const userSchema: Schema<IUser> = new Schema(
     },
     resetPswdExpire: {
       type: Date,
+    },
+    uploadTCAccepted: {
+      type: Boolean,
+      default: false,
     },
   },
   { timestamps: true }

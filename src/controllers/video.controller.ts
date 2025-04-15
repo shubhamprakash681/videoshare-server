@@ -473,6 +473,15 @@ export const uploadVideo = AsyncHandler(
       );
     }
 
+    if (!req.user?.uploadTCAccepted) {
+      return next(
+        new ErrorHandler(
+          "Please accept the Video upload terms and conditions",
+          StatusCodes.BAD_REQUEST
+        )
+      );
+    }
+
     const files = req.files as { [fieldName: string]: Express.Multer.File[] };
     const video = files["video"]?.at(0);
     const thumbnail = files["thumbnail"]?.at(0);
@@ -558,6 +567,15 @@ export const updateVideo = AsyncHandler(
     ) {
       return next(
         new ErrorHandler("All fields are required!", StatusCodes.BAD_REQUEST)
+      );
+    }
+
+    if (!req.user?.uploadTCAccepted) {
+      return next(
+        new ErrorHandler(
+          "Please accept the Video upload terms and conditions",
+          StatusCodes.BAD_REQUEST
+        )
       );
     }
 
