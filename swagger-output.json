@@ -83,6 +83,23 @@
         }
       }
     },
+    "/api/v1/user/terms": {
+      "patch": {
+        "description": "",
+        "parameters": [
+          {
+            "name": "Authorization",
+            "in": "header",
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "default": {
+            "description": ""
+          }
+        }
+      }
+    },
     "/api/v1/user/avatar": {
       "patch": {
         "description": "",
