@@ -837,60 +837,21 @@ export const getWatchHistory = AsyncHandler(
         },
       },
 
+      // Project to keep only watchHistory and add the original watchedAt dates
       {
-        $addFields: {
-          watchHistorySize: {
-            $size: "$watchHistory",
-          },
+        $project: {
+          watchHistory: 1,
+          originalDates: "$watchHistory.watchedAt",
         },
       },
 
-      // Unwind the watchHistory array to apply pagination
-      {
-        $unwind: "$watchHistory",
-      },
-
-      // Sort by watchedAt in descending order (newest first)
-      {
-        $sort: {
-          "watchHistory.watchedAt": -1,
-        },
-      },
-
-      // Apply pagination
-      {
-        $skip: skip,
-      },
-      {
-        $limit: limit,
-      },
-
-      // Group back to reconstruct the array
-      {
-        $group: {
-          _id: "$_id",
-          watchHistory: { $push: "$watchHistory" },
-          // Preserve other fields if needed
-          originalDoc: { $first: "$$ROOT" },
-        },
-      },
-
-      // Restore the original document structure
-      {
-        $replaceRoot: {
-          newRoot: {
-            $mergeObjects: ["$originalDoc", { watchHistory: "$watchHistory" }],
-          },
-        },
-      },
-
-      // lookup
+      // lookup videos
       {
         $lookup: {
           from: "videos",
           localField: "watchHistory.videoId",
           foreignField: "_id",
-          as: "watchHistory",
+          as: "videos",
           pipeline: [
             { $match: { isNSFW: false } },
             {
@@ -910,8 +871,6 @@ export const getWatchHistory = AsyncHandler(
                 ],
               },
             },
-
-            // pipeline to change watchHistory's owner from array to object (since we have a single object in array)
             {
               $addFields: {
                 owner: {
@@ -920,6 +879,53 @@ export const getWatchHistory = AsyncHandler(
               },
             },
           ],
+        },
+      },
+
+      // Combine the watchHistory with video details
+      {
+        $addFields: {
+          watchHistory: {
+            $map: {
+              input: "$watchHistory",
+              as: "wh",
+              in: {
+                $mergeObjects: [
+                  "$$wh",
+                  {
+                    $first: {
+                      $filter: {
+                        input: "$videos",
+                        as: "video",
+                        cond: { $eq: ["$$video._id", "$$wh.videoId"] },
+                      },
+                    },
+                  },
+                ],
+              },
+            },
+          },
+          watchHistorySize: {
+            $size: "$watchHistory",
+          },
+        },
+      },
+
+      // Unwind the watchHistory array to apply sorting and pagination
+      { $unwind: "$watchHistory" },
+
+      // Sort by watchedAt in descending order (newest first)
+      { $sort: { "watchHistory.watchedAt": -1 } },
+
+      // Apply pagination
+      { $skip: skip },
+      { $limit: limit },
+
+      // Group back to reconstruct the array
+      {
+        $group: {
+          _id: "$_id",
+          watchHistory: { $push: "$watchHistory" },
         },
       },
     ]);
