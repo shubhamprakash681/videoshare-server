@@ -885,3 +885,25 @@ export const getWatchHistory = AsyncHandler(
     );
   }
 );
+
+export const toggleUploadTCAccepted = AsyncHandler(
+  async (req: Request, res: Response, next: NextFunction) => {
+    const updatedUser = await User.findByIdAndUpdate(
+      req.user?._id,
+      {
+        $set: { uploadTCAccepted: !req.user?.uploadTCAccepted },
+      },
+      { new: true }
+    ).select("-password -refreshToken");
+
+    res
+      .status(StatusCodes.OK)
+      .json(
+        new APIResponse(
+          StatusCodes.OK,
+          "Terms and Conditions updated successfully!",
+          { user: updatedUser }
+        )
+      );
+  }
+);
