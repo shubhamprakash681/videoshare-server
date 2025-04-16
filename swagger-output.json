@@ -67,7 +67,7 @@
           }
         }
       },
-      "patch": {
+      "put": {
         "description": "",
         "parameters": [
           {
@@ -101,7 +101,7 @@
       }
     },
     "/api/v1/user/avatar": {
-      "patch": {
+      "put": {
         "description": "",
         "parameters": [
           {
@@ -118,7 +118,7 @@
       }
     },
     "/api/v1/user/cover-image": {
-      "patch": {
+      "put": {
         "description": "",
         "parameters": [
           {
@@ -200,7 +200,7 @@
       }
     },
     "/api/v1/user/password/reset/{token}": {
-      "patch": {
+      "put": {
         "description": "",
         "parameters": [
           {
@@ -218,7 +218,7 @@
       }
     },
     "/api/v1/user/password/update": {
-      "patch": {
+      "put": {
         "description": "",
         "parameters": [
           {
@@ -296,7 +296,7 @@
       }
     },
     "/api/v1/dashboard/video/{videoId}": {
-      "delete": {
+      "put": {
         "description": "",
         "parameters": [
           {
@@ -317,7 +317,7 @@
           }
         }
       },
-      "patch": {
+      "delete": {
         "description": "",
         "parameters": [
           {
@@ -605,7 +605,7 @@
       }
     },
     "/api/v1/video/view/{videoId}": {
-      "patch": {
+      "put": {
         "description": "",
         "parameters": [
           {
@@ -628,7 +628,7 @@
       }
     },
     "/api/v1/video/playlist/{videoId}": {
-      "patch": {
+      "put": {
         "description": "",
         "parameters": [
           {
@@ -698,7 +698,7 @@
       }
     },
     "/api/v1/video/update/{videoId}": {
-      "patch": {
+      "put": {
         "description": "",
         "parameters": [
           {
@@ -805,28 +805,7 @@
       }
     },
     "/api/v1/comment/{commentId}": {
-      "delete": {
-        "description": "",
-        "parameters": [
-          {
-            "name": "commentId",
-            "in": "path",
-            "required": true,
-            "type": "string"
-          },
-          {
-            "name": "Authorization",
-            "in": "header",
-            "type": "string"
-          }
-        ],
-        "responses": {
-          "default": {
-            "description": ""
-          }
-        }
-      },
-      "patch": {
+      "put": {
         "description": "",
         "parameters": [
           {
@@ -851,6 +830,27 @@
                 }
               }
             }
+          }
+        ],
+        "responses": {
+          "default": {
+            "description": ""
+          }
+        }
+      },
+      "delete": {
+        "description": "",
+        "parameters": [
+          {
+            "name": "commentId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "Authorization",
+            "in": "header",
+            "type": "string"
           }
         ],
         "responses": {
@@ -885,23 +885,7 @@
       }
     },
     "/api/v1/tweet/{tweetId}": {
-      "delete": {
-        "description": "",
-        "parameters": [
-          {
-            "name": "tweetId",
-            "in": "path",
-            "required": true,
-            "type": "string"
-          }
-        ],
-        "responses": {
-          "default": {
-            "description": ""
-          }
-        }
-      },
-      "patch": {
+      "put": {
         "description": "",
         "parameters": [
           {
@@ -921,6 +905,22 @@
                 }
               }
             }
+          }
+        ],
+        "responses": {
+          "default": {
+            "description": ""
+          }
+        }
+      },
+      "delete": {
+        "description": "",
+        "parameters": [
+          {
+            "name": "tweetId",
+            "in": "path",
+            "required": true,
+            "type": "string"
           }
         ],
         "responses": {

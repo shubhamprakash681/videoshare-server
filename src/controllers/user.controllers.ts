@@ -820,6 +820,10 @@ export const getUserChannelProfile = AsyncHandler(
 
 export const getWatchHistory = AsyncHandler(
   async (req: Request, res: Response, next: NextFunction) => {
+    const page = parseInt(req.query.page as string) || 1;
+    const limit = parseInt(req.query.limit as string) || 10;
+    const skip = (page - 1) * limit;
+
     // Note: This conversion is required because we need to convert string IDs to mongodb id
     // as aggregation pipeline does not automatically performs this conversion
     // unlike in case of mongoose (which automatically performs this kind of conversion)
@@ -830,6 +834,53 @@ export const getWatchHistory = AsyncHandler(
       {
         $match: {
           _id: userId,
+        },
+      },
+
+      {
+        $addFields: {
+          watchHistorySize: {
+            $size: "$watchHistory",
+          },
+        },
+      },
+
+      // Unwind the watchHistory array to apply pagination
+      {
+        $unwind: "$watchHistory",
+      },
+
+      // Sort by watchedAt in descending order (newest first)
+      {
+        $sort: {
+          "watchHistory.watchedAt": -1,
+        },
+      },
+
+      // Apply pagination
+      {
+        $skip: skip,
+      },
+      {
+        $limit: limit,
+      },
+
+      // Group back to reconstruct the array
+      {
+        $group: {
+          _id: "$_id",
+          watchHistory: { $push: "$watchHistory" },
+          // Preserve other fields if needed
+          originalDoc: { $first: "$$ROOT" },
+        },
+      },
+
+      // Restore the original document structure
+      {
+        $replaceRoot: {
+          newRoot: {
+            $mergeObjects: ["$originalDoc", { watchHistory: "$watchHistory" }],
+          },
         },
       },
 
@@ -848,20 +899,19 @@ export const getWatchHistory = AsyncHandler(
                 localField: "owner",
                 foreignField: "_id",
                 as: "owner",
-
                 pipeline: [
                   {
                     $project: {
                       fullname: 1,
                       username: 1,
-                      avatar: 1,
+                      avatar: "$avatar.url",
                     },
                   },
                 ],
               },
             },
 
-            // pipeline to change wathcHistory's owner from array to object (since we have a single object in array)
+            // pipeline to change watchHistory's owner from array to object (since we have a single object in array)
             {
               $addFields: {
                 owner: {
@@ -874,15 +924,30 @@ export const getWatchHistory = AsyncHandler(
       },
     ]);
 
-    res.status(StatusCodes.OK).json(
-      new APIResponse(
-        StatusCodes.OK,
-        "Successfully fetched your Watch History",
-        {
-          watchHistory: user[0].watchHistory,
-        }
-      )
-    );
+    const totalItems = user[0]?.watchHistorySize || 0;
+
+    const result = {
+      docs: user[0]?.watchHistory || [],
+      totalDocs: totalItems,
+      limit: limit,
+      page: page,
+      totalPages: Math.ceil(totalItems / limit),
+      pagingCounter: (page - 1) * limit + 1,
+      hasPrevPage: page > 1,
+      hasNextPage: page * limit < totalItems,
+      prevPage: page > 1 ? page - 1 : null,
+      nextPage: page * limit < totalItems ? page + 1 : null,
+    };
+
+    res
+      .status(StatusCodes.OK)
+      .json(
+        new APIResponse(
+          StatusCodes.OK,
+          "Successfully fetched your Watch History",
+          result
+        )
+      );
   }
 );
 

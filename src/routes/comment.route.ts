@@ -15,7 +15,7 @@ commentRouter
   .get(isAuthenticatedUser, getAllVideoComments);
 commentRouter
   .route("/:commentId")
-  .patch(isAuthenticatedUser, updateComment)
+  .put(isAuthenticatedUser, updateComment)
   .delete(isAuthenticatedUser, deleteComment);
 
 export default commentRouter;

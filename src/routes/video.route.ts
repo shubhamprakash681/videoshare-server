@@ -22,10 +22,10 @@ videoRouter.route("/search/suggestions").get(getSearchSuggestion);
 videoRouter.route("/likes/:videoId").get(isAuthenticatedUser, getVideoLikeData);
 videoRouter
   .route("/view/:videoId")
-  .patch(isAuthenticatedUser, incremenetVideoView);
+  .put(isAuthenticatedUser, incremenetVideoView);
 videoRouter
   .route("/playlist/:videoId")
-  .patch(isAuthenticatedUser, updateVideoPlaylists);
+  .put(isAuthenticatedUser, updateVideoPlaylists);
 
 videoRouter.route("/upload").post(
   isAuthenticatedUser,
@@ -44,7 +44,7 @@ videoRouter.route("/upload").post(
 
 videoRouter
   .route("/update/:videoId")
-  .patch(
+  .put(
     isAuthenticatedUser,
     uploadFileInServer.single("thumbnail"),
     updateVideo

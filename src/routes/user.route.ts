@@ -38,31 +38,33 @@ userRouter.route("/login").post(loginUser);
 userRouter.route("/refresh-session").post(refreshSession);
 
 // secured user routes
-userRouter.route("/profile").get(isAuthenticatedUser, getUserProfile);
-userRouter.route("/profile").patch(isAuthenticatedUser, updateProfile);
+userRouter
+  .route("/profile")
+  .get(isAuthenticatedUser, getUserProfile)
+  .put(isAuthenticatedUser, updateProfile);
 userRouter.route("/terms").put(isAuthenticatedUser, toggleUploadTCAccepted);
 userRouter
   .route("/avatar")
-  .patch(
+  .put(
     isAuthenticatedUser,
     uploadFileInServer.single("avatar"),
     updateUserAvatar
   );
 userRouter
   .route("/cover-image")
-  .patch(
+  .put(
     isAuthenticatedUser,
     uploadFileInServer.single("coverImage"),
     updateUserCoverImage
-  );
-userRouter.route("/cover-image").delete(isAuthenticatedUser, deleteCoverImage);
+  )
+  .delete(isAuthenticatedUser, deleteCoverImage);
 userRouter
   .route("/channel/:username")
   .get(isAuthenticatedUser, getUserChannelProfile);
 userRouter.route("/watch-history").get(isAuthenticatedUser, getWatchHistory);
 userRouter.route("/password/forgot").get(forgotPassword);
-userRouter.route("/password/reset/:token").patch(resetPassword);
-userRouter.route("/password/update").patch(isAuthenticatedUser, updatePassword);
+userRouter.route("/password/reset/:token").put(resetPassword);
+userRouter.route("/password/update").put(isAuthenticatedUser, updatePassword);
 userRouter.route("/logout").get(isAuthenticatedUser, logoutUser);
 
 export default userRouter;

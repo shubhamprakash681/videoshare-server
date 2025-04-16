@@ -13,7 +13,7 @@ dashboardRouter.route("/stats").get(isAuthenticatedUser, getChannelStats);
 dashboardRouter.route("/videos").get(isAuthenticatedUser, getChannelVideos);
 dashboardRouter
   .route("/video/:videoId")
-  .patch(isAuthenticatedUser, toggleVideoState)
+  .put(isAuthenticatedUser, toggleVideoState)
   .delete(isAuthenticatedUser, deleteVideo);
 
 export default dashboardRouter;

@@ -12,7 +12,7 @@ const tweetRouter = express.Router();
 tweetRouter.use(isAuthenticatedUser);
 
 tweetRouter.route("/").post(createTweet);
-tweetRouter.route("/:tweetId").patch(updateTweet).delete(deleteTweet);
+tweetRouter.route("/:tweetId").put(updateTweet).delete(deleteTweet);
 tweetRouter.route("/user/:userId").get(getUserTweets);
 
 export default tweetRouter;
