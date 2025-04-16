@@ -40,7 +40,7 @@ userRouter.route("/refresh-session").post(refreshSession);
 // secured user routes
 userRouter.route("/profile").get(isAuthenticatedUser, getUserProfile);
 userRouter.route("/profile").patch(isAuthenticatedUser, updateProfile);
-userRouter.route("/terms").patch(isAuthenticatedUser, toggleUploadTCAccepted);
+userRouter.route("/terms").put(isAuthenticatedUser, toggleUploadTCAccepted);
 userRouter
   .route("/avatar")
   .patch(

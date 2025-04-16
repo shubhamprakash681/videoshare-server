@@ -84,7 +84,7 @@
       }
     },
     "/api/v1/user/terms": {
-      "patch": {
+      "put": {
         "description": "",
         "parameters": [
           {
