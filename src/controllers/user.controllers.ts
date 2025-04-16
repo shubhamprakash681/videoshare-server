@@ -829,27 +829,38 @@ export const getWatchHistory = AsyncHandler(
     // unlike in case of mongoose (which automatically performs this kind of conversion)
     const userId = new mongoose.Types.ObjectId(req.user?._id as string);
 
-    const user = await User.aggregate([
-      // 1st stage - to find user
+    const watchHistory = await User.aggregate([
       {
         $match: {
           _id: userId,
         },
       },
-
-      // Project to keep only watchHistory and add the original watchedAt dates
       {
         $project: {
           watchHistory: 1,
-          originalDates: "$watchHistory.watchedAt",
+          totalCount: { $size: "$watchHistory" },
+        },
+      },
+      {
+        $unwind: "$watchHistory",
+      },
+      {
+        $addFields: {
+          videoId: "$watchHistory.videoId",
+          watchedAt: "$watchHistory.watchedAt",
+        },
+      },
+      {
+        $sort: {
+          watchedAt: -1,
         },
       },
 
-      // lookup videos
+      // lookup from videos
       {
         $lookup: {
           from: "videos",
-          localField: "watchHistory.videoId",
+          localField: "videoId",
           foreignField: "_id",
           as: "videos",
           pipeline: [
@@ -882,58 +893,31 @@ export const getWatchHistory = AsyncHandler(
         },
       },
 
-      // Combine the watchHistory with video details
       {
         $addFields: {
-          watchHistory: {
-            $map: {
-              input: "$watchHistory",
-              as: "wh",
-              in: {
-                $mergeObjects: [
-                  "$$wh",
-                  {
-                    $first: {
-                      $filter: {
-                        input: "$videos",
-                        as: "video",
-                        cond: { $eq: ["$$video._id", "$$wh.videoId"] },
-                      },
-                    },
-                  },
-                ],
-              },
-            },
-          },
-          watchHistorySize: {
-            $size: "$watchHistory",
+          video: {
+            $first: "$videos",
           },
         },
       },
 
-      // Unwind the watchHistory array to apply sorting and pagination
-      { $unwind: "$watchHistory" },
+      {
+        $project: {
+          totalCount: 1,
+          video: 1,
+        },
+      },
 
-      // Sort by watchedAt in descending order (newest first)
-      { $sort: { "watchHistory.watchedAt": -1 } },
-
-      // Apply pagination
       { $skip: skip },
       { $limit: limit },
-
-      // Group back to reconstruct the array
-      {
-        $group: {
-          _id: "$_id",
-          watchHistory: { $push: "$watchHistory" },
-        },
-      },
     ]);
 
-    const totalItems = user[0]?.watchHistorySize || 0;
+    const totalItems = watchHistory[0]?.totalCount || 0;
 
     const result = {
-      docs: user[0]?.watchHistory || [],
+      docs: watchHistory
+        .filter((historyRes) => historyRes?.video)
+        .map((historyRes) => historyRes.video),
       totalDocs: totalItems,
       limit: limit,
       page: page,
