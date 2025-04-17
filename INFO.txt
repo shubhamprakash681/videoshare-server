@@ -8,6 +8,10 @@ TODO:
 Make Search suggestion API - done
 Make Search Model with searchText & count to implement most searched keyword functionality - API done
 
+Paginations not working properly in all API
+Video upload failing on prod
+Update video modal not opening on prod due to Cloudinary CORS issue -> Debuggers introduced for testing
+
 UI Video description initial value on edit
 RTE font not visible
 
@@ -56,3 +60,6 @@ vercel
 vercel --prod
 Link Git repo from Vercel UI
 Add env from Vercel UI
+
+Note- Aborting Vercel.
+Vercel Serverless Functions have a maximum request payload size limit of max 4.5 MB
