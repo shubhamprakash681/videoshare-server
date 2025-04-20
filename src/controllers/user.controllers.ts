@@ -171,9 +171,12 @@ export const registerUser = AsyncHandler(
       email,
       fullname,
       password,
-      avatar: { public_id: avatarCloudRes.public_id, url: avatarCloudRes.url },
+      avatar: {
+        public_id: avatarCloudRes.public_id,
+        url: avatarCloudRes.secure_url,
+      },
       coverImage: coverImageRes
-        ? { public_id: coverImageRes.public_id, url: coverImageRes.url }
+        ? { public_id: coverImageRes.public_id, url: coverImageRes.secure_url }
         : { public_id: "", url: "" },
     });
 
@@ -497,7 +500,7 @@ export const updateUserAvatar = AsyncHandler(
         $set: {
           avatar: {
             public_id: avatarCloudResponse.public_id,
-            url: avatarCloudResponse.url,
+            url: avatarCloudResponse.secure_url,
           },
         },
       },
@@ -548,7 +551,7 @@ export const updateUserCoverImage = AsyncHandler(
         $set: {
           coverImage: {
             public_id: covImageCloudRes.public_id,
-            url: covImageCloudRes.url,
+            url: covImageCloudRes.secure_url,
           },
         },
       },

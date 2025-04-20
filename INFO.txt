@@ -9,11 +9,14 @@ Make Search suggestion API - done
 Make Search Model with searchText & count to implement most searched keyword functionality - API done
 
 Paginations not working properly in all API
-Video upload failing on prod
-Update video modal not opening on prod due to Cloudinary CORS issue -> Debuggers introduced for testing
+Video upload failing on prod - fixed
+Update video modal not opening on prod due to Cloudinary CORS issue - fixed
 
-UI Video description initial value on edit
-RTE font not visible
+UI Video description initial value on edit - fixed
+RTE font not visible - fixed
+
+Tweet functionality
+search box issue on smaller screen - fixed
 
 
 Definitions of Atlas indices used:

@@ -523,11 +523,11 @@ export const uploadVideo = AsyncHandler(
       description,
       videoFile: {
         public_id: videoCloudRes.public_id,
-        url: videoCloudRes.url,
+        url: videoCloudRes.secure_url,
       },
       thumbnail: {
         public_id: thumbnailCloudRes.public_id,
-        url: thumbnailCloudRes.url,
+        url: thumbnailCloudRes.secure_url,
       },
       duration: videoCloudRes.duration,
       owner: req.user?._id,
@@ -626,7 +626,7 @@ export const updateVideo = AsyncHandler(
         $set: {
           thumbnail: {
             public_id: thumbnailCloudRes.public_id,
-            url: thumbnailCloudRes.url,
+            url: thumbnailCloudRes.secure_url,
           },
           title,
           description,
