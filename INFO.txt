@@ -8,7 +8,7 @@ TODO:
 Make Search suggestion API - done
 Make Search Model with searchText & count to implement most searched keyword functionality - API done
 
-Paginations not working properly in all API
+Paginations not working properly in some APIs - fixed
 Video upload failing on prod - fixed
 Update video modal not opening on prod due to Cloudinary CORS issue - fixed
 

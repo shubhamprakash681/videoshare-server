@@ -15,7 +15,7 @@ import ejs from "ejs";
 import User, { IUser } from "../models/User.model";
 import { deleteCloudinaryFile, uploadOnCloudinary } from "../utils/cloudinary";
 import APIResponse from "../utils/APIResponse";
-import mongoose, { Document } from "mongoose";
+import mongoose, { Document, PipelineStage } from "mongoose";
 import jwt from "jsonwebtoken";
 import { sendEmail } from "../utils/nodemailer";
 
@@ -823,8 +823,8 @@ export const getUserChannelProfile = AsyncHandler(
 
 export const getWatchHistory = AsyncHandler(
   async (req: Request, res: Response, next: NextFunction) => {
-    const page = parseInt(req.query.page as string) || 1;
-    const limit = parseInt(req.query.limit as string) || 10;
+    const page = Number(req.query.page) || 1;
+    const limit = Number(req.query.limit) || 10;
     const skip = (page - 1) * limit;
 
     // Note: This conversion is required because we need to convert string IDs to mongodb id
@@ -832,34 +832,26 @@ export const getWatchHistory = AsyncHandler(
     // unlike in case of mongoose (which automatically performs this kind of conversion)
     const userId = new mongoose.Types.ObjectId(req.user?._id as string);
 
-    const watchHistory = await User.aggregate([
+    const userMatchStage = { $match: { _id: userId } };
+
+    const countPipeline: PipelineStage[] = [
+      userMatchStage,
+      { $project: { totalCount: { $size: "$watchHistory" } } },
+    ];
+
+    const watchHistorydataPipeline: PipelineStage[] = [
+      userMatchStage,
       {
-        $match: {
-          _id: userId,
-        },
+        $project: { watchHistory: { $slice: ["$watchHistory", skip, limit] } },
       },
-      {
-        $project: {
-          watchHistory: 1,
-          totalCount: { $size: "$watchHistory" },
-        },
-      },
-      {
-        $unwind: "$watchHistory",
-      },
+      { $unwind: "$watchHistory" },
       {
         $addFields: {
           videoId: "$watchHistory.videoId",
           watchedAt: "$watchHistory.watchedAt",
         },
       },
-      {
-        $sort: {
-          watchedAt: -1,
-        },
-      },
-
-      // lookup from videos
+      { $sort: { watchedAt: -1 } },
       {
         $lookup: {
           from: "videos",
@@ -885,51 +877,33 @@ export const getWatchHistory = AsyncHandler(
                 ],
               },
             },
-            {
-              $addFields: {
-                owner: {
-                  $first: "$owner",
-                },
-              },
-            },
+            { $addFields: { owner: { $first: "$owner" } } },
           ],
         },
       },
+      { $addFields: { video: { $first: "$videos" } } },
+      { $match: { video: { $ne: null } } },
+      { $project: { video: 1 } },
+    ];
 
-      {
-        $addFields: {
-          video: {
-            $first: "$videos",
-          },
-        },
-      },
-
-      {
-        $project: {
-          totalCount: 1,
-          video: 1,
-        },
-      },
-
-      { $skip: skip },
-      { $limit: limit },
+    const [countResult, watchHistory] = await Promise.all([
+      User.aggregate(countPipeline),
+      User.aggregate(watchHistorydataPipeline),
     ]);
 
-    const totalItems = watchHistory[0]?.totalCount || 0;
+    const totalCount = countResult[0]?.totalCount || 0;
 
     const result = {
-      docs: watchHistory
-        .filter((historyRes) => historyRes?.video)
-        .map((historyRes) => historyRes.video),
-      totalDocs: totalItems,
+      docs: watchHistory.map((historyRes) => historyRes.video),
+      totalDocs: totalCount,
       limit: limit,
       page: page,
-      totalPages: Math.ceil(totalItems / limit),
+      totalPages: Math.ceil(totalCount / limit),
       pagingCounter: (page - 1) * limit + 1,
       hasPrevPage: page > 1,
-      hasNextPage: page * limit < totalItems,
+      hasNextPage: page * limit < totalCount,
       prevPage: page > 1 ? page - 1 : null,
-      nextPage: page * limit < totalItems ? page + 1 : null,
+      nextPage: page * limit < totalCount ? page + 1 : null,
     };
 
     res

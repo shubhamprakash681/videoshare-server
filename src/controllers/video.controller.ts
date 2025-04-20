@@ -66,6 +66,10 @@ export const getAllVideos = AsyncHandler(
       });
     }
 
+    // creating duplicate pipeline for counting (before sort and pagination)
+    const countPipeline = [...pipeline];
+    countPipeline.push({ $count: "totalCount" });
+
     if (sortBy && sortType) {
       pipeline.push({
         $sort: {
@@ -100,7 +104,6 @@ export const getAllVideos = AsyncHandler(
           ],
         },
       },
-
       {
         $unwind: {
           path: "$owner",
@@ -113,38 +116,26 @@ export const getAllVideos = AsyncHandler(
       { $skip: (Number(page) - 1) * Number(limit) },
       { $limit: Number(limit) }
     );
-    // console.log(pipeline);
 
-    const videoAggregate = Video.aggregate(pipeline);
+    const [countResult, videos] = await Promise.all([
+      Video.aggregate(countPipeline),
+      Video.aggregate(pipeline),
+    ]);
 
-    const countPipeline = videoAggregate
-      .pipeline()
-      .slice(
-        0,
-        videoAggregate
-          .pipeline()
-          .findIndex((p) => Object.keys(p)[0] === "$match") + 1
-      );
-    countPipeline.push({ $count: "totalCount" });
-
-    const countResult = await Video.aggregate(countPipeline);
     const totalCount = countResult.length > 0 ? countResult[0].totalCount : 0;
-
-    const videos = await videoAggregate
-      .skip((+page - 1) * +limit)
-      .limit(+limit);
 
     const result = {
       docs: videos,
       totalDocs: totalCount,
-      limit: limit,
-      page: page,
-      totalPages: Math.ceil(totalCount / limit),
-      pagingCounter: (page - 1) * limit + 1,
-      hasPrevPage: page > 1,
-      hasNextPage: page * limit < totalCount,
-      prevPage: page > 1 ? page - 1 : null,
-      nextPage: page * limit < totalCount ? page + 1 : null,
+      limit: Number(limit),
+      page: Number(page),
+      totalPages: Math.ceil(totalCount / Number(limit)),
+      pagingCounter: (Number(page) - 1) * Number(limit) + 1,
+      hasPrevPage: Number(page) > 1,
+      hasNextPage: Number(page) * Number(limit) < totalCount,
+      prevPage: Number(page) > 1 ? Number(page) - 1 : null,
+      nextPage:
+        Number(page) * Number(limit) < totalCount ? Number(page) + 1 : null,
     };
 
     res
@@ -174,7 +165,7 @@ export const getSuggestions = AsyncHandler(
         .json({ message: "Video not found" });
     }
 
-    const suggestionAggregate = Video.aggregate([
+    const pipeline: PipelineStage[] = [
       {
         $search: {
           index: "auto-text-search-index",
@@ -219,7 +210,7 @@ export const getSuggestions = AsyncHandler(
         },
       },
 
-      // Sort by popularity & recency
+      // Sort by popularity & creationDate
       { $sort: { views: -1, createdAt: -1 } },
 
       // Stage for populating owner's data
@@ -245,39 +236,38 @@ export const getSuggestions = AsyncHandler(
           path: "$owner",
         },
       },
+    ];
 
-      { $skip: (Number(page) - 1) * Number(limit) }, // Pagination: Skip before limit
-      { $limit: Number(limit) }, // Pagination: Limit the results
-    ]);
-
-    const countPipeline = suggestionAggregate
-      .pipeline()
-      .slice(
-        0,
-        suggestionAggregate
-          .pipeline()
-          .findIndex((p) => Object.keys(p)[0] === "$match") + 1
-      );
+    // Creating duplicate pipeline (before pagination)
+    const countPipeline = [...pipeline];
     countPipeline.push({ $count: "totalCount" });
 
-    const countResult = await Video.aggregate(countPipeline);
-    const totalCount = countResult.length > 0 ? countResult[0].totalCount : 0;
+    // Add pagination to main pipeline
+    pipeline.push(
+      { $skip: (Number(page) - 1) * Number(limit) },
+      { $limit: Number(limit) }
+    );
 
-    const videos = await suggestionAggregate
-      .skip((+page - 1) * +limit)
-      .limit(+limit);
+    // Execute both pipelines in parallel
+    const [countResult, videos] = await Promise.all([
+      Video.aggregate(countPipeline),
+      Video.aggregate(pipeline),
+    ]);
+
+    const totalCount = countResult.length > 0 ? countResult[0].totalCount : 0;
 
     const result = {
       docs: videos,
       totalDocs: totalCount,
-      limit: limit,
-      page: page,
-      totalPages: Math.ceil(totalCount / limit),
-      pagingCounter: (page - 1) * limit + 1,
-      hasPrevPage: page > 1,
-      hasNextPage: page * limit < totalCount,
-      prevPage: page > 1 ? page - 1 : null,
-      nextPage: page * limit < totalCount ? page + 1 : null,
+      limit: Number(limit),
+      page: Number(page),
+      totalPages: Math.ceil(totalCount / Number(limit)),
+      pagingCounter: (Number(page) - 1) * Number(limit) + 1,
+      hasPrevPage: Number(page) > 1,
+      hasNextPage: Number(page) * Number(limit) < totalCount,
+      prevPage: Number(page) > 1 ? Number(page) - 1 : null,
+      nextPage:
+        Number(page) * Number(limit) < totalCount ? Number(page) + 1 : null,
     };
 
     res
