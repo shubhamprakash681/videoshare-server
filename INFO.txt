@@ -63,3 +63,33 @@ Add env from Vercel UI
 
 Note- Aborting Vercel.
 Vercel Serverless Functions have a maximum request payload size limit of max 4.5 MB
+
+VPS deployment process
+create & ssh to vm using ssh key
+update
+upgrade
+
+Generate SSL Certificate using certbot
+  - sudo apt install certbot
+  - sudo certbot certonly --standalone --preferred-challenges http -d api.videoshare.shubhamprakash681.in,www.api.videoshare.shubhamprakash681.in
+
+
+if git repo is private-
+  - create ssh key in .ssh dir:-
+  - ssh-keygen -t ed25519
+  - add content of .pub file as deploy key on github repo (use cat filename.pub to read contents)
+
+git clone <ssh/general repo link> server
+create .env file inside server dir
+
+install docker in vm:-
+https://www.digitalocean.com/community/tutorials/how-to-install-and-use-docker-on-ubuntu-22-04
+
+sudo apt  install docker-compose
+docker compose version
+if docker-compose is not working (install docker compose v2)-
+  - sudo apt remove docker-compose
+  - sudo apt install docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
+
+docker compose config
+docker compose up -d --build

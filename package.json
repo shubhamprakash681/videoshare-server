@@ -1,5 +1,5 @@
 {
-  "name": "videoshare-server",
+  "name": "videoshare-api",
   "version": "1.0.0",
   "main": "index.js",
   "scripts": {
