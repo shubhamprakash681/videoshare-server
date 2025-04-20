@@ -10,7 +10,7 @@ import swaggerDocument from "../swagger-output.json";
 const app = express();
 
 // body-parser
-app.use(express.json({ limit: "50kb" }));
+app.use(express.json({ limit: "100mb" }));
 // cookie-parsr
 app.use(cookieParser());
 // cors
@@ -22,7 +22,7 @@ app.use(
   })
 );
 // url encoded -> for parsing incoming requests with URL-encoded payloads
-app.use(express.urlencoded({ extended: true, limit: "50kb" }));
+app.use(express.urlencoded({ extended: true, limit: "100mb" }));
 
 // for serving static files
 app.use(express.static("public"));
