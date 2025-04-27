@@ -186,7 +186,7 @@ export const getSuggestions = AsyncHandler(
               },
               {
                 text: {
-                  query: targetVideo.description,
+                  query: targetVideo.description.slice(0, 1023),
                   path: "description",
                   matchCriteria: "any",
                   // Allows minor typos
