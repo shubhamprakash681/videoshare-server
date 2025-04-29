@@ -180,20 +180,20 @@ export const getSuggestions = AsyncHandler(
                   fuzzy: {
                     maxEdits: 2,
                     prefixLength: 0,
-                    maxExpansions: 50,
+                    maxExpansions: 20,
                   },
                 },
               },
               {
                 text: {
-                  query: targetVideo.description.slice(0, 1023),
+                  query: targetVideo.description.slice(0, 1023), // Limit to 1024 characters
                   path: "description",
                   matchCriteria: "any",
                   // Allows minor typos
                   fuzzy: {
                     maxEdits: 2,
                     prefixLength: 0,
-                    maxExpansions: 50,
+                    maxExpansions: 20,
                   },
                 },
               },

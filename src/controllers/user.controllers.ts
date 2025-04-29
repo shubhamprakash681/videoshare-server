@@ -339,7 +339,7 @@ export const forgotPassword = AsyncHandler(
         .json(
           new APIResponse(
             StatusCodes.OK,
-            "Password Reset Link sent to your email"
+            "We’ve sent a password reset link to your email"
           )
         );
     } catch (error) {
