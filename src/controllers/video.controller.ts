@@ -43,7 +43,7 @@ export const getAllVideos = AsyncHandler(
             fuzzy: {
               maxEdits: 2,
               prefixLength: 0,
-              maxExpansions: 50,
+              maxExpansions: 20,
             },
           },
         },
@@ -70,19 +70,22 @@ export const getAllVideos = AsyncHandler(
     const countPipeline = [...pipeline];
     countPipeline.push({ $count: "totalCount" });
 
-    if (sortBy && sortType) {
-      pipeline.push({
-        $sort: {
-          [sortBy]: sortType === "des" ? -1 : 1,
-        },
-      });
-    } else {
-      // default sorting by creation date
-      pipeline.push({
-        $sort: {
-          createdAt: -1,
-        },
-      });
+    if (!query || !query.trim().length) {
+      // if no query is provided, then only sort by views and creation date
+      if (sortBy && sortType) {
+        pipeline.push({
+          $sort: {
+            [sortBy]: sortType === "des" ? -1 : 1,
+          },
+        });
+      } else {
+        // default sorting by creation date
+        pipeline.push({
+          $sort: {
+            createdAt: -1,
+          },
+        });
+      }
     }
 
     // lookup for populating owner data
@@ -312,7 +315,7 @@ export const getSearchSuggestion = AsyncHandler(
                   fuzzy: {
                     maxEdits: 2,
                     prefixLength: 0,
-                    maxExpansions: 50,
+                    maxExpansions: 20,
                   },
                 },
               },
@@ -324,7 +327,7 @@ export const getSearchSuggestion = AsyncHandler(
                   fuzzy: {
                     maxEdits: 2,
                     prefixLength: 0,
-                    maxExpansions: 50,
+                    maxExpansions: 20,
                   },
                 },
               },

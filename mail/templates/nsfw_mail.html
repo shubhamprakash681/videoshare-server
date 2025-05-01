@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content="NSFW Email Notification" />
+    <meta name="keywords" content="NSFW, Email, Notification" />
+    <title>{{ subject }}</title>
+    <style>
+      body {
+        margin: 0;
+        padding: 20px 0;
+        font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI",
+          Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+        line-height: 1.5;
+        color: #1e293b;
+        background-color: #f8fafc;
+      }
+      .container {
+        max-width: 680px;
+        min-width: 320px;
+        margin: 0 auto;
+        background-color: #ffffff;
+        border-radius: 12px;
+        overflow: hidden;
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+      }
+      h1 {
+        color: #1e293b;
+        font-size: 20px;
+        font-weight: 600;
+      }
+      a {
+        color: #1155cc;
+      }
+      .scan-result {
+        background-color: #f1f5f9;
+        border-radius: 8px;
+        padding: 16px;
+        margin: 20px 0;
+      }
+      .scan-title {
+        font-weight: 600;
+        margin-bottom: 8px;
+      }
+      .result-item {
+        display: flex;
+        justify-content: space-between;
+        margin-bottom: 4px;
+      }
+      .result-label {
+        font-weight: 500;
+      }
+      .timestamps {
+        margin-top: 16px;
+      }
+      .timestamp-list {
+        max-height: 200px;
+        overflow-y: auto;
+        background-color: white;
+        border-radius: 6px;
+        padding: 8px;
+        margin-top: 8px;
+        border: 1px solid #e2e8f0;
+      }
+      .timestamp-item {
+        padding: 6px 8px;
+        border-bottom: 1px solid #f1f5f9;
+      }
+      .timestamp-item:last-child {
+        border-bottom: none;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <div
+        style="
+          background: linear-gradient(135deg, #e21c4b 0%, #da3e62 100%);
+          padding: 30px 20px;
+          text-align: center;
+          color: white;
+        "
+      >
+        <div
+          style="
+            font-size: 24px;
+            font-weight: 700;
+            letter-spacing: -0.5px;
+            margin-bottom: 8px;
+          "
+        >
+          VideoShare
+        </div>
+        <div style="font-size: 14px; opacity: 0.9; font-weight: 400">
+          Your favorite video sharing platform
+        </div>
+      </div>
+
+      <div style="padding: 30px">
+        <h1 style="margin-top: 0">Hello, {{ recipient_name }}!</h1>
+        <p>{{ message_body }}</p>
+
+        <div class="scan-result">
+          <div class="scan-title">NSFW Content Scan Results</div>
+          <p>
+            Your video has been automatically scanned frame-by-frame for
+            potentially inappropriate content. Here are the results:
+          </p>
+
+          <div class="result-item">
+            <span class="result-label">Total Frames Analyzed:</span>
+            <span>{{ total_frames }}</span>
+          </div>
+          <div class="result-item">
+            <span class="result-label">NSFW Frames Detected:</span>
+            <span>{{ nsfw_frames }} ({{ nsfw_percentage }}%)</span>
+          </div>
+
+          {% if nsfw_frames > 0 %}
+          <div class="timestamps">
+            <div class="scan-title">NSFW Content Timestamps:</div>
+            <p>
+              The following timestamps in your video were flagged as containing
+              potentially inappropriate content:
+            </p>
+            <div class="timestamp-list">
+              {% for timestamp in nsfw_timestamps %}
+              <div class="timestamp-item">{{ timestamp }}</div>
+              {% endfor %}
+            </div>
+          </div>
+          {% endif %}
+        </div>
+
+        <p>
+          If you believe this detection is incorrect, please contact our
+          <a href="mailto:shubhamprakash681@gmail.com">support team</a> for
+          manual review.
+        </p>
+        <p>Thank you for helping us maintain a safe community!</p>
+      </div>
+
+      <div
+        style="
+          padding: 20px 30px;
+          background-color: #f1f5f9;
+          font-size: 13px;
+          color: #64748b;
+          text-align: center;
+          border-radius: 0 0 12px 12px;
+        "
+      >
+        <p style="margin: 0 0 15px 0">
+          VideoShare is a personal portfolio project showcasing a modern
+          video-sharing platform powered by
+          <a
+            href="https://cloudinary.com"
+            style="color: #e21c4b; text-decoration: none"
+            target="_blank"
+            >Cloudinary</a
+          >. Explore, create, and share your stories with the world.
+        </p>
+        <p style="margin: 0 0 15px 0">
+          <a
+            href="{{ clientBaseUrl }}"
+            style="color: #e21c4b; text-decoration: none"
+            target="_blank"
+            >Home</a
+          >
+          &nbsp;&bull;&nbsp;
+          <a
+            href="{{ clientBaseUrl }}/about"
+            style="color: #e21c4b; text-decoration: none"
+            target="_blank"
+            >About</a
+          >
+          &nbsp;&bull;&nbsp;
+          <a
+            href="{{ clientBaseUrl }}/terms"
+            style="color: #e21c4b; text-decoration: none"
+            target="_blank"
+            >Terms of Service</a
+          >
+          &nbsp;&bull;&nbsp;
+          <a
+            href="{{ clientBaseUrl }}/privacy"
+            style="color: #e21c4b; text-decoration: none"
+            target="_blank"
+            >Privacy</a
+          >
+        </p>
+
+        <!-- Divider -->
+        <div
+          width="100%"
+          cellpadding="0"
+          cellspacing="0"
+          border="0"
+          style="margin: 15px 0"
+        >
+          <div style="height: 1px; background-color: #e2e8f0"></div>
+        </div>
+
+        <p style="margin: 0 0 10px 0">
+          © {{ currentYear }} VideoShare. A personal portfolio project. All
+          rights reserved.
+        </p>
+      </div>
+    </div>
+  </body>
+</html>
