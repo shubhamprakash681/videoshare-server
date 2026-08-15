@@ -1,4 +1,4 @@
-# version: "3.8"
+name: videoshare
 
 services:
   videoshare-api1:
@@ -56,7 +56,11 @@ services:
       - videoshare-api3
     networks:
       - app-network
+      - edge
 
 networks:
   app-network:
     driver: bridge
+  edge:
+    name: ${SHARED_PROXY_NETWORK:-shared-proxy}
+    external: true

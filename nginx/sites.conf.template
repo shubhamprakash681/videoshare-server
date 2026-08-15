@@ -1,0 +1,58 @@
+# This file is rendered by the official Nginx image entrypoint using values from
+# videoshare/.env. Certificates for both domains must exist before Nginx starts.
+
+server {
+    listen 80 default_server;
+    server_name ${VIDEOSHARE_DOMAIN} ${TRADEX_DOMAIN};
+
+    location ^~ /.well-known/acme-challenge/ {
+        root /var/www/certbot;
+    }
+
+    location / {
+        return 301 https://$host$request_uri;
+    }
+}
+
+server {
+    listen 443 ssl http2;
+    server_name ${VIDEOSHARE_DOMAIN};
+
+    ssl_certificate /etc/letsencrypt/live/${VIDEOSHARE_DOMAIN}/fullchain.pem;
+    ssl_certificate_key /etc/letsencrypt/live/${VIDEOSHARE_DOMAIN}/privkey.pem;
+    ssl_protocols TLSv1.2 TLSv1.3;
+
+    location / {
+        proxy_pass http://videoshare_backend;
+        proxy_http_version 1.1;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+        proxy_set_header Upgrade $http_upgrade;
+        proxy_set_header Connection $connection_upgrade;
+    }
+}
+
+server {
+    listen 443 ssl http2;
+    server_name ${TRADEX_DOMAIN};
+
+    ssl_certificate /etc/letsencrypt/live/${TRADEX_DOMAIN}/fullchain.pem;
+    ssl_certificate_key /etc/letsencrypt/live/${TRADEX_DOMAIN}/privkey.pem;
+    ssl_protocols TLSv1.2 TLSv1.3;
+
+    location / {
+        # A variable defers Docker DNS resolution until request time. It keeps
+        # Nginx healthy while TradeX is restarted independently.
+        set $tradex_upstream http://tradex-gateway:8080$request_uri;
+        proxy_pass $tradex_upstream;
+        proxy_http_version 1.1;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+        proxy_set_header Upgrade $http_upgrade;
+        proxy_set_header Connection $connection_upgrade;
+    }
+}
