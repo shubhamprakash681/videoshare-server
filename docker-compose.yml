@@ -14,31 +14,31 @@ services:
     volumes:
       - ./public:/app/public
 
-  videoshare-api2:
-    build: .
-    container_name: videoshare-api2
-    networks:
-      - app-network
-    restart: always
-    environment:
-      - PORT=5002
-    env_file:
-      - ./.env
-    volumes:
-      - ./public:/app/public
+  # videoshare-api2:
+  #   build: .
+  #   container_name: videoshare-api2
+  #   networks:
+  #     - app-network
+  #   restart: always
+  #   environment:
+  #     - PORT=5002
+  #   env_file:
+  #     - ./.env
+  #   volumes:
+  #     - ./public:/app/public
 
-  videoshare-api3:
-    build: .
-    container_name: videoshare-api3
-    networks:
-      - app-network
-    restart: always
-    environment:
-      - PORT=5003
-    env_file:
-      - ./.env
-    volumes:
-      - ./public:/app/public
+  # videoshare-api3:
+  #   build: .
+  #   container_name: videoshare-api3
+  #   networks:
+  #     - app-network
+  #   restart: always
+  #   environment:
+  #     - PORT=5003
+  #   env_file:
+  #     - ./.env
+  #   volumes:
+  #     - ./public:/app/public
 
   nginx:
     build: ./nginx
@@ -52,8 +52,8 @@ services:
       - /var/www:/var/www
     depends_on:
       - videoshare-api1
-      - videoshare-api2
-      - videoshare-api3
+      # - videoshare-api2
+      # - videoshare-api3
     networks:
       - app-network
       - edge

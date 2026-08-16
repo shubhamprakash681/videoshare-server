@@ -74,8 +74,11 @@ upgrade
 
 Generate SSL Certificate using certbot
   - sudo apt install certbot
-  - sudo certbot certonly --standalone --preferred-challenges http -d api.videoshare.shubhamprakash681.in,www.api.videoshare.shubhamprakash681.in
-
+  - sudo certbot certonly --standalone --preferred-challenges http \
+    -d api.videoshare.shubhamprakash681.in \
+    -d www.api.videoshare.shubhamprakash681.in \
+    -d api.tradex.shubhamprakash681.in \
+    -d www.api.tradex.shubhamprakash681.in
 
 if git repo is private-
   - create ssh key in .ssh dir:-
@@ -93,6 +96,13 @@ docker compose version
 if docker-compose is not working (install docker compose v2)-
   - sudo apt remove docker-compose
   - sudo apt install docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
+
+## For Shared deployment - Create shared network
+docker network create shared-proxy
+## For Shared deployment - Create shared network
+
+docker compose -f videoshare-server/docker-compose.yml up -d --build
+docker compose -f docker-compose-prod.yml up -d --build
 
 docker compose config
 docker compose up -d --build
